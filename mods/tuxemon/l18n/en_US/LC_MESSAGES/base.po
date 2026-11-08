@@ -4883,6 +4883,9 @@ msgstr "Italian"
 msgid "language_ja"
 msgstr "Japanese"
 
+msgid "language_ko_kr"
+msgstr "Korean"
+
 msgid "language_nb_no"
 msgstr "Norwegian Bokmål"
 
