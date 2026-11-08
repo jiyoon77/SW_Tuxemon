@@ -95,6 +95,7 @@ class CombatAnimations(Menu[None], ABC):
             shadow_text_func=self.shadow_text,
         )
         self.background_sprite: Sprite | None = None
+        self._speed_label: Surface | None = None
         self.monsters_just_leveled_up: dict[str, bool] = {}
         self.monsters_leftover_xp: dict[str, float] = {}
         env = self.client.environment_manager.get_active_environment()
@@ -106,6 +107,15 @@ class CombatAnimations(Menu[None], ABC):
 
     def draw(self, surface: Surface) -> None:
         super().draw(surface)
+        if self._speed_label is not None:
+            margin = self.scale_int(4)
+            rect = self._speed_label.get_rect(
+                topright=(self.rect.right - margin, self.rect.top + margin)
+            )
+            surface.blit(self._speed_label, rect)
+
+    def update_speed_label(self, speed: int) -> None:
+        self._speed_label = self.shadow_text(f"Tab x{speed}")
 
     def refresh_ui(self) -> None:
         """Call this whenever HP or EXP changes."""
