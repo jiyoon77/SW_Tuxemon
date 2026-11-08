@@ -1,0 +1,1584 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Tuxemon\n"
+"PO-Revision-Date: 2026-11-09 00:00+0900\n"
+"Last-Translator: SW_Tuxemon team10\n"
+"Language-Team: Korean\n"
+"Language: ko_KR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# LANGUAGE ##
+msgid "language_ko_kr"
+msgstr "한국어"
+
+# COMBAT ##
+msgid "combat_gain_exp"
+msgstr "{name}은(는) 경험치 {xp}를 얻었다!"
+
+msgid "combat_miss"
+msgstr "빗나갔다..."
+
+msgid "combat_splash_partial"
+msgstr "일부만 맞았다! 피해가 줄어들었다."
+
+msgid "combat_full_health"
+msgstr "하지만 {name}의 체력은 이미 가득하다."
+
+msgid "combat_state_healed"
+msgstr "{name}의 체력이 회복되었다."
+
+msgid "combat_forfeit"
+msgstr "항복했다!\n{npc}은(는) 실망했다."
+
+msgid "combat_cannot_run_away"
+msgstr "도망치지 못했다."
+
+msgid "combat_player_run"
+msgstr "무사히 도망쳤다!"
+
+msgid "combat_player_run_status"
+msgstr "도망칠 수 없다.\n{monster}은(는) {status} 상태다!"
+
+msgid "combat_player_swap_status"
+msgstr "교체할 수 없다.\n{monster}은(는) {status} 상태다!"
+
+msgid "combat_used_x"
+msgstr "{user}의 {name}!"
+
+msgid "combat_used_x_on_y"
+msgstr "{user}은(는) {target}에게 {name}을(를) 사용했다!"
+
+msgid "combat_swap"
+msgstr "{user}은(는) {target}을(를) 내보냈다!"
+
+msgid "combat_skip"
+msgstr "{user}은(는) 이번 턴을 쉰다!"
+
+msgid "combat_call_tuxemon"
+msgstr "가라, {name}!"
+
+msgid "combat_levitate_get"
+msgstr "{user}은(는) 공중으로 높이 떠올랐다."
+
+msgid "combat_amnesia_get"
+msgstr "{user}은(는) 기억을 잃었다."
+
+msgid "combat_status_damage"
+msgstr "{name}은(는) {status} 피해를 입었다!"
+
+msgid "combat_trainer_appeared"
+msgstr "{name}이(가) 승부를 걸어왔다!"
+
+msgid "combat_victory"
+msgstr "{name}의 승리!"
+
+msgid "combat_victory_trainer"
+msgstr "{name}의 승리! {prize}을(를) 받았다!"
+
+msgid "combat_defeat"
+msgstr "{name}은(는) 패배했다!"
+
+msgid "combat_draw"
+msgstr "모두 쓰러졌다!"
+
+msgid "combat_capturing_success"
+msgstr "{name}을(를) 잡았다!"
+
+msgid "combat_capturing_fail"
+msgstr "{name}이(가) 빠져나왔다!"
+
+msgid "combat_replacement"
+msgstr "교체할 턱시몬을 고르세요!"
+
+msgid "combat_replacement_is_fainted"
+msgstr "그 턱시몬은 이미 쓰러졌다!"
+
+msgid "combat_wild_appeared"
+msgstr "야생 {name}이(가) 나타났다!"
+
+msgid "combat_horde_appeared"
+msgstr "야생 몬스터 무리에 둘러싸였다!"
+
+msgid "combat_horde_swap"
+msgstr "무리 속에서 {target}이(가) 나타났다!"
+
+msgid "combat_monster_choice"
+msgstr "{name}은(는) 무엇을 할까?"
+
+msgid "combat_player_choice"
+msgstr "{player}은(는) 무엇을 할까?"
+
+msgid "combat_fainted"
+msgstr "{name}은(는) 쓰러졌다!"
+
+msgid "combat_isactive"
+msgstr "{name}은(는) 이미 싸우고 있다."
+
+msgid "combat_target_itself"
+msgstr "{name}은(는) 자기 자신을 공격할 수 없다."
+
+msgid "combat_state_blinded_get"
+msgstr "{target}은(는) 앞이 보이지 않는다."
+
+msgid "combat_state_burn_end"
+msgstr "{target}은(는) 화상 피해를 입었다."
+
+msgid "combat_state_burn_get"
+msgstr "{target}은(는) 화상을 입었다."
+
+msgid "combat_state_chargedup_get"
+msgstr "{target}은(는) 힘을 가득 모았다."
+
+msgid "combat_state_charging_get"
+msgstr "{target}은(는) 힘을 모으고 있다."
+
+msgid "combat_state_confused_get"
+msgstr "{target}은(는) 혼란에 빠졌다."
+
+msgid "combat_state_confused_tech"
+msgstr "{target}은(는) 혼란스러워 {name}을(를) 쓰지 못했다!"
+
+msgid "combat_state_gold"
+msgstr "{name}은(는) {gold}을(를) 얻었다!"
+
+msgid "combat_state_switch"
+msgstr "{target}은(는) {types} 속성이 되었다!"
+
+msgid "combat_state_switch_fail"
+msgstr "{target}은(는) 이미 {type} 속성이다!"
+
+msgid "combat_state_switch_both"
+msgstr "{user}은(는) {type1} 속성, {target}은(는) {type2} 속성이 되었다!"
+
+msgid "combat_state_diehard_get"
+msgstr "{target}은(는) 끝까지 버틸 것이다."
+
+msgid "combat_state_diehard_tech"
+msgstr "{target}은(는) 고통을 참고 버텼다."
+
+msgid "combat_state_diehard_end"
+msgstr "{target}은(는) 너무 다쳐서 버티기를 할 수 없다."
+
+msgid "combat_state_dozing_get"
+msgstr "{target}은(는) 잠들었다."
+
+msgid "combat_state_dozing_end"
+msgstr "{target}은(는) 잠에서 깼다!"
+
+msgid "combat_state_enraged_get"
+msgstr "{target}은(는) 분노했다."
+
+msgid "combat_state_exhausted_get"
+msgstr "{target}은(는) 지쳐 버렸다."
+
+msgid "combat_state_festering_get"
+msgstr "{target}의 상처가 곪았다."
+
+msgid "combat_state_festering_item"
+msgstr "회복에 실패했다. 상처가 곪았다."
+
+msgid "combat_state_focused_get"
+msgstr "{target}은(는) 집중하고 있다."
+
+msgid "combat_state_grabbed_get"
+msgstr "{target}은(는) 꽉 붙잡혔다."
+
+msgid "combat_state_hardshell_get"
+msgstr "{target}은(는) 단단한 껍질로 덮였다."
+
+msgid "combat_state_lifeleech_get"
+msgstr "{target}의 생명력이 빨리고 있다."
+
+msgid "combat_state_lifeleech_end"
+msgstr "{target}은(는) 생명력을 빼앗기고 있다."
+
+msgid "combat_state_lifegift_get"
+msgstr "{target}의 기운이 회복되고 있다."
+
+msgid "combat_state_lifegift_end"
+msgstr "{target}에게 생명력이 채워졌다."
+
+msgid "combat_state_noddingoff_get"
+msgstr "{target}은(는) 꾸벅꾸벅 졸고 있다."
+
+msgid "combat_state_slow_get"
+msgstr "{target}은(는) 느려졌다."
+
+msgid "combat_state_poison_get"
+msgstr "{target}은(는) 독에 걸렸다."
+
+msgid "combat_state_poison_end"
+msgstr "{target}은(는) 독 피해를 입었다."
+
+msgid "combat_state_recover_failure"
+msgstr "{target}은(는) 더 이상 회복할 수 없다."
+
+msgid "combat_state_recover_get"
+msgstr "{target}은(는) 재생하고 있다."
+
+msgid "combat_state_recover_end"
+msgstr "{target}은(는) 생명력을 되찾았다."
+
+msgid "combat_state_retaliate_get"
+msgstr "{target}은(는) 다음 공격 때 반격할 것이다."
+
+msgid "combat_state_revenge_get"
+msgstr "공격받으면 {target}은(는) 복수할 것이다."
+
+msgid "combat_state_sniping_get"
+msgstr "{target}은(는) 뒤로 물러났다."
+
+msgid "combat_state_softened_get"
+msgstr "{target}의 갑옷이 물러졌다."
+
+msgid "combat_state_stuck_get"
+msgstr "{target}은(는) 움직일 수 없게 되었다."
+
+msgid "combat_state_plague1"
+msgstr "에... 에... {target}은(는) 재채기를 참았다."
+
+msgid "combat_state_plague2"
+msgstr "에... 에취! {user}은(는) {target}에게 재채기를 했다."
+
+msgid "combat_state_plague3"
+msgstr "{target}은(는) 그것을 닦아 냈다."
+
+msgid "combat_state_plague4"
+msgstr "{target}은(는) 훌쩍이기 시작했다."
+
+msgid "combat_state_plague5"
+msgstr "{target}은(는) 한결 건강해 보인다."
+
+msgid "combat_state_plague6"
+msgstr "{target}은(는) 자기도 모르게 나았다."
+
+msgid "combat_state_plague7"
+msgstr "{user}은(는) 재채기를 참았다."
+
+msgid "combat_state_plague8"
+msgstr "{target}이(가) 갑자기 재채기를 했다!"
+
+msgid "combat_state_lockdown_get"
+msgstr "{target}에게는 아이템이 통하지 않는다."
+
+msgid "combat_state_lockdown_item"
+msgstr "봉쇄된 {target}에게는 아이템을 쓸 수 없다."
+
+msgid "combat_state_wasting_get"
+msgstr "{target}은(는) 쇠약 증세에 걸렸다."
+
+msgid "combat_state_wasting_end"
+msgstr "{target}은(는) 점점 쇠약해지고 있다."
+
+msgid "combat_state_flinching_get"
+msgstr "{target}은(는) 움찔해서 움직이지 못할 수도 있다."
+
+msgid "combat_state_charmed_get"
+msgstr "{target}은(는) 매혹되어 머뭇거릴 수도 있다."
+
+msgid "combat_state_charmed_miss"
+msgstr "{user}은(는) 너무 반해 버렸다!"
+
+msgid "combat_state_wild_get"
+msgstr "{target}은(는) 사나워졌다."
+
+msgid "combat_state_wild_end"
+msgstr "{target}은(는) 아직 사납다."
+
+msgid "combat_state_harpooned_get"
+msgstr "{target}은(는) 물러나면 다칠 수 있다."
+
+msgid "combat_state_spiky_get"
+msgstr "{target}은(는) 다가가면 다칠 수 있다."
+
+msgid "combat_state_elemental_shield_get"
+msgstr "{target}은(는) 불꽃 방패를 펼쳤다."
+
+msgid "combat_state_prickly_get"
+msgstr "{target}에게 닿으면 다칠 수 있다."
+
+msgid "combat_state_feedback_get"
+msgstr "{target}은(는) 원거리 공격을 되돌려 보낸다."
+
+msgid "combat_state_immune"
+msgstr "{target}에게는 {method}이(가) 통하지 않는다"
+
+msgid "combat_state_prevented"
+msgstr "{method} 때문에 {target}은(는) {condition} 상태가 되지 않는다"
+
+msgid "combat_state_cancelled"
+msgstr "{condition} 때문에 {target}의 {method}이(가) 취소되었다"
+
+msgid "combat_state_immune_multiple"
+msgstr "{target}에게는 {method}이(가) 통하지 않는다"
+
+msgid "combat_state_stat_rose"
+msgstr "{target}의 {stat}이(가) 올랐다."
+
+msgid "combat_state_stat_rose_greatly"
+msgstr "{target}의 {stat}이(가) 크게 올랐다."
+
+msgid "combat_state_stat_fell"
+msgstr "{target}의 {stat}이(가) 떨어졌다."
+
+msgid "combat_state_stat_fell_greatly"
+msgstr "{target}의 {stat}이(가) 크게 떨어졌다."
+
+msgid "combat_multiattack"
+msgstr "{hit_count}번 맞았다!"
+
+msgid "combat_clone_description"
+msgstr "몸을 나누어 분신을 만들어 공격하게 한다."
+
+msgid "combat_clone"
+msgstr "분신"
+
+msgid "combat_environment_boost"
+msgstr "날씨와 계절 덕분에 공격이 강해졌다!"
+
+msgid "combat_environment_weaken"
+msgstr "날씨와 계절 때문에 공격이 약해졌다..."
+
+# MENU ##
+msgid "menu_select"
+msgstr "선택"
+
+msgid "menu_sort"
+msgstr "정렬"
+
+msgid "menu_storage_swap_monster"
+msgstr "드론이 이동을 마쳤습니다. {from}은(는) 보관함으로, {to}은(는) 파티로 들어갔습니다."
+
+msgid "menu_storage_swap_monster_fail"
+msgstr "드론이 이동을 마치지 못했습니다. 보관소에 턱시몬이 없습니다."
+
+msgid "menu_bag"
+msgstr "가방"
+
+msgid "menu_fight"
+msgstr "싸운다"
+
+msgid "menu_item"
+msgstr "아이템"
+
+msgid "menu_items"
+msgstr "아이템"
+
+msgid "menu_party"
+msgstr "파티"
+
+msgid "menu_bond"
+msgstr "유대"
+
+msgid "menu_bond_despise"
+msgstr "{monster_name}은(는) {player_name}을(를) 싫어한다"
+
+msgid "menu_bond_wary"
+msgstr "{monster_name}은(는) {player_name}을(를) 경계한다"
+
+msgid "menu_bond_along"
+msgstr "{monster_name}은(는) {player_name}과(와) 잘 지낸다"
+
+msgid "menu_bond_adore"
+msgstr "{monster_name}은(는) {player_name}을(를) 무척 좋아한다"
+
+msgid "menu_to_the_top"
+msgstr "맨 위로"
+
+msgid "menu_to_the_bottom"
+msgstr "맨 아래로"
+
+msgid "menu_party_level_lowest"
+msgstr "최저 레벨"
+
+msgid "menu_party_alignment"
+msgstr "성향"
+
+msgid "menu_party_level_highest"
+msgstr "최고 레벨"
+
+msgid "menu_party_level_average"
+msgstr "평균 레벨"
+
+msgid "menu_party_traveled"
+msgstr "{name}은(는) {walked} {unit} 이동했다"
+
+msgid "menu_journal"
+msgstr "일지"
+
+msgid "menu_tuxepedia"
+msgstr "턱시몬 도감"
+
+msgid "menu_load"
+msgstr "불러오기"
+
+msgid "menu_monster"
+msgstr "턱시몬"
+
+msgid "menu_storage"
+msgstr "턱시몬 찾기"
+
+msgid "menu_dropoff"
+msgstr "턱시몬 맡기기"
+
+msgid "menu_item_storage"
+msgstr "아이템 찾기"
+
+msgid "menu_item_dropoff"
+msgstr "아이템 맡기기"
+
+msgid "menu_calendar"
+msgstr "달력"
+
+msgid "menu_email"
+msgstr "메일"
+
+msgid "menu_email_none"
+msgstr "메일이 없습니다"
+
+msgid "menu_email_from"
+msgstr "보낸 사람"
+
+msgid "menu_back"
+msgstr "뒤로"
+
+msgid "menu_multiplayer"
+msgstr "멀티플레이"
+
+msgid "menu_new_game"
+msgstr "새 게임"
+
+msgid "menu_options"
+msgstr "옵션"
+
+msgid "menu_missions"
+msgstr "미션"
+
+msgid "menu_minigame"
+msgstr "미니게임"
+
+msgid "menu_battle"
+msgstr "배틀"
+
+msgid "menu_player"
+msgstr "플레이어"
+
+msgid "menu_run"
+msgstr "도망친다"
+
+msgid "menu_forfeit"
+msgstr "항복"
+
+msgid "menu_ball"
+msgstr "볼"
+
+msgid "menu_food"
+msgstr "먹이"
+
+msgid "menu_doll"
+msgstr "인형"
+
+msgid "menu_save"
+msgstr "저장"
+
+msgid "menu_autosave"
+msgstr "자동 저장"
+
+msgid "menu_no_autosave"
+msgstr "자동 저장 끔"
+
+msgid "menu_up_key"
+msgstr "위쪽 키"
+
+msgid "menu_left_key"
+msgstr "왼쪽 키"
+
+msgid "menu_right_key"
+msgstr "오른쪽 키"
+
+msgid "menu_down_key"
+msgstr "아래쪽 키"
+
+msgid "menu_primary_select_key"
+msgstr "결정 키"
+
+msgid "menu_secondary_select_key"
+msgstr "취소 키"
+
+msgid "menu_back_key"
+msgstr "뒤로 키"
+
+msgid "menu_reset_default"
+msgstr "키 설정 초기화"
+
+msgid "menu_language"
+msgstr "언어"
+
+msgid "menu_unmute_music"
+msgstr "음악 켜기"
+
+msgid "menu_mute_music"
+msgstr "음악 끄기"
+
+msgid "menu_music_volume"
+msgstr "음악 볼륨"
+
+msgid "menu_sound_volume"
+msgstr "효과음 볼륨"
+
+msgid "menu_units"
+msgstr "단위"
+
+msgid "menu_units_metric"
+msgstr "미터법"
+
+msgid "menu_units_imperial"
+msgstr "야드파운드법"
+
+msgid "menu_hemisphere"
+msgstr "반구"
+
+msgid "menu_hemisphere_north"
+msgstr "북반구"
+
+msgid "menu_hemisphere_south"
+msgstr "남반구"
+
+msgid "menu_screen_size"
+msgstr "화면 크기 (실험 기능)"
+
+msgid "menu_storage_infected_monster"
+msgstr "바이러스가 감지되었습니다. 시스템에 있는 모든 턱시몬의 안전을 위해 감염된 턱시몬은 맡길 수 없습니다."
+
+msgid "menu_storage_take_monster"
+msgstr "{name}이(가) 파티에 들어왔습니다!"
+
+msgid "menu_storage_take_item"
+msgstr "{name} {nr}개를 가방에 넣었습니다!"
+
+msgid "menu_storage_items_full"
+msgstr "가방이 가득 차서 더 꺼낼 수 없습니다."
+
+msgid "menu_storage_empty_kennel"
+msgstr "보관소가 비어 있습니다. 데려갈 턱시몬이 없습니다."
+
+msgid "menu_storage_full_kennel"
+msgstr "보관소가 가득 찼습니다."
+
+msgid "menu_storage_empty_locker"
+msgstr "보관함이 비어 있습니다. 꺼낼 아이템이 없습니다."
+
+msgid "menu_no_craftable_items"
+msgstr "지금은 만들 수 있는 것이 없습니다."
+
+msgid "menu_craft_tools"
+msgstr "제작 도구"
+
+msgid "menu_tool_consumed"
+msgstr "제작에 사용되어 사라집니다."
+
+msgid "menu_tool_not_consumed"
+msgstr "다시 쓸 수 있는 도구입니다."
+
+msgid "menu_intro"
+msgstr "아무 키나 누르세요"
+
+msgid "menu_celestial_title"
+msgstr "천체 개요"
+
+msgid "menu_celestial_current"
+msgstr "현재 위상"
+
+msgid "menu_celestial_details"
+msgstr "주기 상세"
+
+msgid "menu_celestial_footer"
+msgstr "보고 끝"
+
+msgid "menu_calendar_title"
+msgstr "달력"
+
+msgid "menu_calendar_today"
+msgstr "오늘"
+
+msgid "menu_calendar_none"
+msgstr "기록된 일정이 없습니다."
+
+msgid "menu_park_summary"
+msgstr "공원 요약"
+
+msgid "menu_park_seen"
+msgstr "발견한 턱시몬 종류"
+
+msgid "menu_park_total"
+msgstr "총 시도 횟수"
+
+msgid "menu_park_capture"
+msgstr "포획 성공"
+
+msgid "menu_park_failed"
+msgstr "포획 실패"
+
+msgid "menu_park_success_rate"
+msgstr "포획 성공률"
+
+msgid "menu_park_sighting"
+msgstr "가장 자주 본 턱시몬"
+
+msgid "menu_park_no_sighting"
+msgstr "발견 기록이 없습니다."
+
+msgid "menu_park_highlights"
+msgstr "조우 행동 기록"
+
+msgid "menu_park_no_highlights"
+msgstr "조우 기록이 없습니다."
+
+msgid "menu_park_thanks"
+msgstr "공원을 탐험해 주셔서 감사합니다!"
+
+msgid "menu_park_afraid"
+msgstr "{user}은(는) 몸을 움츠리며 도망칠 준비를 한다."
+
+msgid "menu_park_stare"
+msgstr "{user}은(는) 알 수 없는 눈빛으로 가만히 당신을 바라본다."
+
+msgid "menu_park_wander"
+msgstr "{user}은(는) 생각에 잠긴 듯 천천히 움직인다."
+
+msgid "menu_park_resting"
+msgstr "{user}은(는) 몸을 웅크리고 천천히 숨을 쉰다."
+
+msgid "menu_park_playful"
+msgstr "{user}은(는) 신이 나서 흙먼지를 일으키며 뛰어다닌다."
+
+msgid "menu_park_alert"
+msgstr "{user}은(는) 무언가를 느꼈는지 갑자기 멈춰 선다."
+
+msgid "menu_daycare_summary"
+msgstr "육성소 요약"
+
+msgid "menu_daycare_parents"
+msgstr "육성소에 맡긴 턱시몬"
+
+msgid "menu_daycare_empty"
+msgstr "맡긴 턱시몬이 없습니다."
+
+msgid "menu_daycare_mode"
+msgstr "모드"
+
+msgid "menu_daycare_thanks"
+msgstr "육성소를 이용해 주셔서 감사합니다!"
+
+msgid "menu_daycare_add"
+msgstr "턱시몬 맡기기"
+
+msgid "menu_daycare_withdraw"
+msgstr "모두 찾기"
+
+msgid "menu_daycare_collect"
+msgstr "새끼 데려가기"
+
+msgid "menu_daycare_mode_training"
+msgstr "훈련"
+
+msgid "menu_daycare_mode_breeding"
+msgstr "교배"
+
+msgid "menu_daycare_mode_incompatible"
+msgstr "훈련 (맞지 않는 짝)"
+
+msgid "menu_daycare_mode_empty"
+msgstr "비어 있음"
+
+msgid "menu_daycare_training"
+msgstr "훈련 정보"
+
+msgid "menu_daycare_exp_total"
+msgstr "얻은 경험치 합계"
+
+msgid "menu_daycare_cost_total"
+msgstr "지불한 비용 합계"
+
+msgid "menu_daycare_exp_per_step"
+msgstr "걸음당 경험치 (턱시몬 1마리)"
+
+msgid "menu_daycare_cost_per_step"
+msgstr "걸음당 비용 (턱시몬 1마리)"
+
+msgid "menu_daycare_exp_per_step_total"
+msgstr "걸음당 경험치 합계"
+
+msgid "menu_daycare_cost_per_step_total"
+msgstr "걸음당 비용 합계"
+
+msgid "menu_daycare_training_active_single"
+msgstr "훈련 중 (1마리)"
+
+msgid "menu_daycare_training_active_double"
+msgstr "훈련 중 (2마리)"
+
+msgid "menu_daycare_training_inactive"
+msgstr "훈련 안 함"
+
+msgid "menu_daycare_breeding"
+msgstr "교배 정보"
+
+msgid "menu_daycare_progress"
+msgstr "진행도"
+
+msgid "menu_daycare_ready"
+msgstr "새끼가 태어났습니다!"
+
+msgid "menu_daycare_halfway"
+msgstr "절반 정도 왔습니다"
+
+msgid "menu_daycare_not_ready"
+msgstr "아직 준비되지 않았습니다"
+
+msgid "menu_daycare_no_breeding"
+msgstr "교배할 수 없습니다."
+
+msgid "menu_time_tint"
+msgstr "시간대 색"
+
+msgid "menu_weather_effects"
+msgstr "날씨 효과"
+
+msgid "menu_on"
+msgstr "켜기"
+
+msgid "menu_off"
+msgstr "끄기"
+
+# SYSTEM / UI ##
+msgid "spyder_campaign"
+msgstr "턱시몬: 스파이더와 대성당"
+
+msgid "xero_campaign"
+msgstr "턱시몬: 제로"
+
+msgid "water_campaign"
+msgstr "턱시몬: 혼돈의 파도"
+
+msgid "action_call"
+msgstr "전화"
+
+msgid "alert_text"
+msgstr "글자가 너무 깁니다!"
+
+msgid "allow_devolution"
+msgstr "퇴화를 허락할까요?"
+
+msgid "allow_evolution"
+msgstr "진화를 허락할까요?"
+
+msgid "app_banking"
+msgstr "은행 앱"
+
+msgid "app_contacts"
+msgstr "연락처 앱"
+
+msgid "app_map"
+msgstr "지도 앱"
+
+msgid "app_radio"
+msgstr "라디오 앱"
+
+msgid "app_radio_tuner"
+msgstr "라디오 튜너"
+
+msgid "app_renaming"
+msgstr "이름 바꾸기 앱"
+
+msgid "armour"
+msgstr "방어"
+
+msgid "attempting_capture"
+msgstr "포획을 시도하는 중..."
+
+msgid "bank"
+msgstr "은행"
+
+msgid "bivouac"
+msgstr "야영지"
+
+msgid "black_female"
+msgstr "흑인 여성"
+
+msgid "black_male"
+msgstr "흑인 남성"
+
+msgid "white_female"
+msgstr "백인 여성"
+
+msgid "white_male"
+msgstr "백인 남성"
+
+msgid "blue"
+msgstr "파랑"
+
+msgid "green"
+msgstr "초록"
+
+msgid "red"
+msgstr "빨강"
+
+msgid "bullet"
+msgstr "탄환"
+
+msgid "buy"
+msgstr "사기"
+
+msgid "sell"
+msgstr "팔기"
+
+msgid "cannot_use_tech_monster"
+msgstr "{name}은(는) 사용할 수 없다."
+
+msgid "cant_release"
+msgstr "파티에 하나뿐인 턱시몬은 놓아줄 수 없습니다."
+
+msgid "chargedup"
+msgstr "충전 완료"
+
+msgid "charging"
+msgstr "충전 중"
+
+msgid "charmed"
+msgstr "매혹"
+
+msgid "choose_difficulty"
+msgstr "난이도를 고르세요"
+
+msgid "clinic"
+msgstr "병원"
+
+msgid "completed"
+msgstr "완료"
+
+msgid "confused"
+msgstr "혼란"
+
+msgid "deposit"
+msgstr "입금"
+
+msgid "withdraw"
+msgstr "출금"
+
+msgid "devolution_confirmation"
+msgstr "{name}이(가) {evolve}(으)로 퇴화하려고 한다."
+
+msgid "devolution_ended"
+msgstr "{name}은(는) {evolve}(으)로 퇴화했다!"
+
+msgid "die"
+msgstr "주사위"
+
+msgid "diehard"
+msgstr "끈기"
+
+msgid "disable"
+msgstr "끄기"
+
+msgid "enable"
+msgstr "켜기"
+
+msgid "dodge"
+msgstr "회피"
+
+msgid "drone"
+msgstr "드론"
+
+msgid "e_pay"
+msgstr "전자 결제"
+
+msgid "empty"
+msgstr "비어 있음"
+
+msgid "empty_slot"
+msgstr "빈 슬롯"
+
+msgid "equip_item"
+msgstr "장착"
+
+msgid "unequip_item"
+msgstr "장착 해제"
+
+msgid "evolution_confirmation"
+msgstr "{name}이(가) {target}(으)로 진화하려고 한다."
+
+msgid "evolution_ended"
+msgstr "{name}은(는) {evolve}(으)로 진화했다!"
+
+msgid "exhausted"
+msgstr "탈진"
+
+msgid "exit"
+msgstr "나가기"
+
+msgid "exp_to_next_level"
+msgstr "다음 레벨까지 경험치"
+
+msgid "failed"
+msgstr "실패"
+
+msgid "faint"
+msgstr "기절"
+
+msgid "feedback"
+msgstr "반사"
+
+msgid "festering"
+msgstr "곪음"
+
+msgid "fishing_rod_failure"
+msgstr "물결만 일 뿐, 아무것도 걸리지 않았다."
+
+msgid "flinching"
+msgstr "움찔"
+
+msgid "font"
+msgstr "글꼴"
+
+msgid "gender_enby"
+msgstr "논바이너리"
+
+msgid "gender_whatever"
+msgstr "상관없음"
+
+msgid "generic_failure"
+msgstr "실패했다!"
+
+msgid "generic_success"
+msgstr "성공했다!"
+
+msgid "generic_wrong"
+msgstr "틀렸다!"
+
+msgid "gotcha"
+msgstr "잡았다!"
+
+msgid "gotcha_kennel"
+msgstr "{name}은(는) 보관소로 보내졌다!"
+
+msgid "gotcha_team"
+msgstr "{name}이(가) 팀에 들어왔다!"
+
+msgid "grabbed"
+msgstr "붙잡힘"
+
+msgid "harpooned"
+msgstr "작살"
+
+msgid "height"
+msgstr "키"
+
+msgid "weight"
+msgstr "몸무게"
+
+msgid "heroic"
+msgstr "영웅"
+
+msgid "hp"
+msgstr "체력"
+
+msgid "short_hp"
+msgstr "HP"
+
+msgid "input_monster_name"
+msgstr "턱시몬의 이름을 지어 줄까요?"
+
+msgid "input_name"
+msgstr "이름은?"
+
+msgid "inside"
+msgstr "실내"
+
+msgid "outside"
+msgstr "실외"
+
+msgid "item_cannot_use_here"
+msgstr "{name}은(는) 여기서 사용할 수 없다!"
+
+msgid "item_confirm_cancel"
+msgstr "취소"
+
+msgid "item_confirm_use"
+msgstr "사용"
+
+msgid "item_disbanded"
+msgstr "{name} {nr}개를 버렸다."
+
+msgid "item_no_available_target"
+msgstr "지금은 {name}을(를) 쓸 수 있는 턱시몬이 없다."
+
+msgid "item_used_wrong_location_inside"
+msgstr "{name}은(는) {here}에서만 사용할 수 있다!"
+
+msgid "item_used_wrong_location_type"
+msgstr "{name}은(는) {here}에서만 사용할 수 있다!"
+
+msgid "journal_badge_featured"
+msgstr "대표"
+
+msgid "journal_badge_missing"
+msgstr "미발견"
+
+msgid "journal_badge_stubs"
+msgstr "미완성"
+
+msgid "lifegift"
+msgstr "생명 선물"
+
+msgid "lifeleech"
+msgstr "생명 흡수"
+
+msgid "lockdown"
+msgstr "봉쇄"
+
+msgid "log_off"
+msgstr "로그아웃"
+
+msgid "lore_trigger_success"
+msgstr "오래된 이야기가 다시 떠올랐다! 무언가 바뀔지도 모른다."
+
+msgid "melee"
+msgstr "근접"
+
+msgid "ranged"
+msgstr "원거리"
+
+msgid "touch"
+msgstr "접촉"
+
+msgid "mission_delete"
+msgstr "미션 삭제"
+
+msgid "mission_deletion"
+msgstr "이 미션을 삭제할까요?"
+
+msgid "mission_next"
+msgstr "다음 미션"
+
+msgid "mission_progress"
+msgstr "진행도"
+
+msgid "mission_repeatable"
+msgstr "반복할 수 있는 미션입니다."
+
+msgid "monster_menu_pick"
+msgstr "고르기"
+
+msgid "monster_menu_shape_short"
+msgstr "체형"
+
+msgid "monster_menu_species"
+msgstr "종"
+
+msgid "monster_menu_type_suffix"
+msgstr " 속성"
+
+msgid "month_jan"
+msgstr "1월"
+
+msgid "month_feb"
+msgstr "2월"
+
+msgid "month_mar"
+msgstr "3월"
+
+msgid "month_apr"
+msgstr "4월"
+
+msgid "month_may"
+msgstr "5월"
+
+msgid "month_jun"
+msgstr "6월"
+
+msgid "month_jul"
+msgstr "7월"
+
+msgid "month_aug"
+msgstr "8월"
+
+msgid "month_sep"
+msgstr "9월"
+
+msgid "month_oct"
+msgstr "10월"
+
+msgid "month_nov"
+msgstr "11월"
+
+msgid "month_dec"
+msgstr "12월"
+
+msgid "multiplayer_already_hosting"
+msgstr "이미 호스트를 열었습니다!"
+
+msgid "multiplayer_host_game"
+msgstr "게임 열기"
+
+msgid "multiplayer_hosting_ready"
+msgstr "접속을 받을 준비가 되었습니다!"
+
+msgid "multiplayer_join_game"
+msgstr "게임 참가"
+
+msgid "multiplayer_join_prompt"
+msgstr "호스트 이름 또는 IP?"
+
+msgid "multiplayer_no_servers"
+msgstr "서버를 찾지 못했습니다..."
+
+msgid "multiplayer_scan_games"
+msgstr "서버 찾기"
+
+msgid "yes"
+msgstr "예"
+
+msgid "no"
+msgstr "아니요"
+
+msgid "no_evolution"
+msgstr "진화 안 함"
+
+msgid "yes_evolution"
+msgstr "진화"
+
+msgid "yes_evolutions"
+msgstr "진화"
+
+msgid "no_money_operation"
+msgstr "{operation}할 수 없습니다!"
+
+msgid "no_signal"
+msgstr "신호 없음"
+
+msgid "noddingoff"
+msgstr "졸음"
+
+msgid "normal"
+msgstr "보통"
+
+msgid "not_implemented"
+msgstr "아직 구현되지 않은 기능입니다."
+
+msgid "nu_map_missing"
+msgstr "GPS가 갱신되지 않습니다."
+
+msgid "number_picker_instructions"
+msgstr "오른쪽: 늘리기\n 왼쪽: 줄이기\n A: 확인"
+
+msgid "options_new_input_key0"
+msgstr "새로 설정할 키를 누르세요"
+
+msgid "page_tuxepedia"
+msgstr "번호 {a}–{b}"
+
+msgid "pay"
+msgstr "결제"
+
+msgid "pending"
+msgstr "진행 중"
+
+msgid "phone_no_answer"
+msgstr "전화벨만 울리고 받지 않는다!"
+
+msgid "player_battles"
+msgstr "배틀: {tot}회 (승 {won} 무 {draw} 패 {lost})"
+
+msgid "player_total_playtime"
+msgstr "총 플레이 시간"
+
+msgid "player_walked"
+msgstr "{distance} {unit} 걸음"
+
+msgid "poison"
+msgstr "독"
+
+msgid "prickly"
+msgstr "가시"
+
+msgid "quarantine"
+msgstr "격리"
+
+msgid "quest_trigger_success"
+msgstr "새로운 퀘스트가 시작되었다! 다음 도전이 기다린다."
+
+msgid "radio_no_signal"
+msgstr "신호가 없습니다. 다른 곳에서 맞춰 보세요."
+
+msgid "radio_play_button"
+msgstr "라디오 켜기"
+
+msgid "radio_signal_strength"
+msgstr "신호 세기"
+
+msgid "radio_static_msgid"
+msgstr "신호가 잡음 속으로 사라진다..."
+
+msgid "radio_station_list_header"
+msgstr "들을 수 있는 방송국"
+
+msgid "radio_tuner"
+msgstr "튜너"
+
+msgid "radio_tuner_hint"
+msgstr "밀어서 방송국을 맞추세요"
+
+msgid "radio_tuning_static"
+msgstr "잡음이 심하다..."
+
+msgid "random"
+msgstr "무작위"
+
+msgid "recover"
+msgstr "회복"
+
+msgid "relation_relationship"
+msgstr "관계"
+
+msgid "relation_strength"
+msgstr "친밀도"
+
+msgid "release_confirmation"
+msgstr "정말 {name}을(를) 놓아줄까요?"
+
+msgid "renaming"
+msgstr "이름 바꾸기"
+
+msgid "retaliate"
+msgstr "반격"
+
+msgid "revenge"
+msgstr "복수"
+
+msgid "save_failure"
+msgstr "저장하는 중에 문제가 생겼습니다!"
+
+msgid "save_success"
+msgstr "저장했습니다!"
+
+msgid "scope"
+msgstr "분석"
+
+msgid "score_label"
+msgstr "점수"
+
+msgid "select_day"
+msgstr "날짜 선택"
+
+msgid "select_month"
+msgstr "월 선택"
+
+msgid "select_number"
+msgstr "숫자 선택"
+
+msgid "shop"
+msgstr "상점"
+
+msgid "shop_buy_free"
+msgstr "무료!"
+
+msgid "shop_buy_soldout"
+msgstr "품절!"
+
+msgid "shop_buy_too_expensive"
+msgstr "아직 살 수 없습니다"
+
+msgid "shop_heal_to"
+msgstr "체력 {hp}까지 회복"
+
+msgid "shop_train_to"
+msgstr "레벨 {level}까지 훈련"
+
+msgid "signal_moderate"
+msgstr "보통"
+
+msgid "signal_none"
+msgstr "신호 없음"
+
+msgid "signal_strong"
+msgstr "강함"
+
+msgid "signal_weak"
+msgstr "약함"
+
+msgid "skip"
+msgstr "건너뛰기"
+
+msgid "slot"
+msgstr "슬롯"
+
+msgid "slow"
+msgstr "느림"
+
+msgid "speed"
+msgstr "스피드"
+
+msgid "strength"
+msgstr "힘"
+
+msgid "spiky"
+msgstr "가시 돋침"
+
+msgid "sprite"
+msgstr "모습"
+
+msgid "station_scrambled_frequency"
+msgstr "뒤섞인 주파수"
+
+msgid "streak_bonus"
+msgstr "연속 보너스! 기세가 대단해!"
+
+msgid "streak_label"
+msgstr "연속"
+
+msgid "stuck"
+msgstr "묶임"
+
+msgid "swap"
+msgstr "교체"
+
+msgid "swap_item"
+msgstr "아이템 교체"
+
+msgid "taste"
+msgstr "맛"
+
+msgid "tastes"
+msgstr "맛"
+
+msgid "taste_change_report"
+msgstr "{name}의 {type}이(가) {old}에서 {new}(으)로 바뀌었다!"
+
+msgid "taste_cold"
+msgstr "차가운 맛"
+
+msgid "taste_warm"
+msgstr "따뜻한 맛"
+
+msgid "tech_cannot_forget"
+msgstr "이 기술은 지울 수 없습니다."
+
+msgid "tech_no_learn"
+msgstr "{tech}을(를) 배우지 않기로 했다."
+
+msgid "tech_replaced"
+msgstr "{old} 대신 {new}을(를) 배웠다."
+
+msgid "technique_accuracy"
+msgstr "명중률"
+
+msgid "technique_description"
+msgstr "ID.{id} ({types}) - 명중률 {acc}%, 효과율 {pot}%, 위력 {pow}/3, 재사용 {rec}턴"
+
+msgid "technique_id_types_recharge"
+msgstr "ID.{id} ({types}) - 재사용 {rec}턴"
+
+msgid "technique_potency"
+msgstr "효과율"
+
+msgid "technique_power"
+msgstr "위력"
+
+msgid "technique_recharge"
+msgstr "재사용"
+
+msgid "technique_turns"
+msgstr "턴"
+
+msgid "trade_completed"
+msgstr "{sent}을(를) 주고 {received}을(를) 받았다!"
+
+msgid "trap_failed"
+msgstr "덫이 닫혔지만 땅은 조용하다."
+
+msgid "trap_triggered"
+msgstr "덫이 튀어 오르고 땅속에서 무언가 나타났다."
+
+msgid "tuxemon_new_tech"
+msgstr "{name}은(는) {tech}을(를) 배웠다!"
+
+msgid "tuxemon_released"
+msgstr "{name}을(를) 놓아주었다."
+
+msgid "tuxepedia_data_caught"
+msgstr "{all}마리 중 {param}마리 잡음"
+
+msgid "tuxepedia_data_seen"
+msgstr "{all}마리 중 {param}마리 발견"
+
+msgid "tuxepedia_progress"
+msgstr "턱시몬 도감: {value}%!"
+
+msgid "uninstall_app"
+msgstr "앱을 삭제할 수 없습니다."
+
+msgid "wallet"
+msgstr "지갑"
+
+msgid "wasting"
+msgstr "쇠약"
+
+msgid "who_is_that"
+msgstr "이 턱시몬은 누구?"
+
+msgid "wild"
+msgstr "사나움"
+
+msgid "level_beginner"
+msgstr "입문"
+
+msgid "level_easy"
+msgstr "쉬움"
+
+msgid "level_normal"
+msgstr "보통"
+
+msgid "level_hard"
+msgstr "어려움"
+
+msgid "level_expert"
+msgstr "전문가"
+
+msgid "gender_male"
+msgstr "남성"
+
+msgid "gender_female"
+msgstr "여성"
+
+msgid "gender_neuter"
+msgstr "중성"
+
+msgid "gender_nonbinary"
+msgstr "논바이너리"
+
+msgid "taste_peppy"
+msgstr "톡 쏘는 맛"
+
+msgid "taste_mild"
+msgstr "순한 맛"
+
+msgid "taste_salty"
+msgstr "짠맛"
+
+msgid "taste_sweet"
+msgstr "단맛"
+
+msgid "taste_hearty"
+msgstr "든든한 맛"
+
+msgid "taste_soft"
+msgstr "부드러운 맛"
+
+msgid "taste_zesty"
+msgstr "상큼한 맛"
+
+msgid "taste_flakey"
+msgstr "바삭한 맛"
+
+msgid "taste_refined"
+msgstr "고급스러운 맛"
+
+msgid "taste_dry"
+msgstr "퍽퍽한 맛"
+
+msgid "taste_savory"
+msgstr "감칠맛"
+
+msgid "taste_bland"
+msgstr "밍밍한 맛"
+
+msgid "taste_hearty_description"
+msgstr "빽빽한 빵처럼 진하고 구수한 맛. 방어력을 단단하게 해 준다."
+
+msgid "taste_zesty_description"
+msgstr "시트러스처럼 톡 쏘는 맛. 집중력에 불을 붙인다."
+
+msgid "taste_flakey_description"
+msgstr "마른 페이스트리처럼 바스러지는 가벼운 맛. 조준이 흔들린다."
+
+msgid "taste_refined_description"
+msgstr "좋은 차처럼 은은하고 우아한 맛. 반사 신경을 날카롭게 한다."
+
+msgid "taste_dry_description"
+msgstr "눅눅한 크래커처럼 퍽퍽한 맛. 감각이 무뎌진다."
+
+msgid "taste_savory_description"
+msgstr "훈연한 버섯과 캐러멜화한 양파처럼 진하게 구운 맛. 속을 따뜻하게 채운다."
+
+msgid "taste_bland_description"
+msgstr "물 대신 한숨으로 만든 분말 감자처럼 흐릿하고 텁텁한 맛."
+
+# OPENING (spyder intro) ##
+msgid "spyder_intro_question"
+msgstr "인트로를 건너뛸까요?"
+
+msgid "spyder_papertown_restinbed"
+msgstr "푹 자고 개운하게 일어났다!"
+
+msgid "spyder_intro00"
+msgstr "안녕하세요, 저는 옴니채널의 CEO입니다. 이 지역의 신문, TV, 라디오를 운영하고 있죠.\n여러분께 소식을 전하는 것이 제 의무입니다."
+
+msgid "spyder_intro01"
+msgstr "턱시몬은 이 세계에 사는 동물입니다.\n붙잡히는 걸 좋아해서, 주인들은 재미와 이익을 위해 턱시몬끼리 배틀을 시키죠.\n강한 자가 이기는 법, 비즈니스 세계와 똑같습니다.\n대부분의 턱시몬은 야생에서 만날 수 있고, 경험을 쌓으면 더 발전된 모습으로 변합니다.\n하지만 대성당을 이루는 다섯 기둥, 즉 이 지역을 운영하는 다섯 동맹 기업은\n자연을 한 단계 개선했습니다. 이번 시즌, 저희는 다섯 마리의 디럭스 턱시몬을 선보입니다!"
+
+msgid "spyder_intro02"
+msgstr "이 턱시몬들은 토큰에 닿는 즉시 변신합니다. 기다림 없는 즉각 만족이죠!\n게다가 어떤 모습으로 변신할지 직접 고를 수도 있습니다."
+
+msgid "spyder_intro03"
+msgstr "토큰은 모든 기둥 기업에서 저렴한 가격에 판매합니다!\n에헴, 무슨 얘기를 하고 있었죠?\n아, 맞다. 각 기둥 기업이 이 특별한 턱시몬을 한 마리씩 제공합니다."
+
+msgid "spyder_pc_alert"
+msgstr "커널 패닉 - 동기화 실패: 치명적인 머신 체크 오류"
+
+msgid "spyder_intro_shopkeeper1"
+msgstr "CEO님 발표 정말 멋졌죠! 골드 회원분들께 턱시몬을 한 마리씩 무료로 드리고 있어요."
+
+msgid "spyder_intro_shopkeeper2"
+msgstr "이 신청서만 작성해 주세요."
+
+msgid "spyder_intro_shopkeeper3"
+msgstr "이제 신청서를 점원에게 돌려주세요. 그러면 턱시몬을 드릴게요."
+
+msgid "spyder_intro_shopkeeper4"
+msgstr "죄송하지만 골드 회원이 아니시네요. 이 혜택은 골드 회원 전용이에요.\n오늘은 집으로 돌아가 주세요."
+
+msgid "spyder_intro_question_name"
+msgstr "이름이 뭐예요?"
+
+msgid "potions_in_shop"
+msgstr "진열장에 물약이 잔뜩 있다. 이 동네에서 꽤 인기가 많은가 보다."
+
+msgid "dollfin"
+msgstr "돌고핀"
+
+msgid "ignibus"
+msgstr "이그니버스"
+
+msgid "memnomnom"
+msgstr "냠냠몬"
+
+msgid "budaye"
+msgstr "부다예"
+
+msgid "grintot"
+msgstr "그린토트"
+
+# PRONOUN ##
+msgid "pronoun_he"
+msgstr "남성"
+
+msgid "pronoun_she"
+msgstr "여성"
+
+msgid "pronoun_they"
+msgstr "기타"

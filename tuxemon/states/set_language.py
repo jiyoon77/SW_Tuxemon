@@ -9,10 +9,12 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
 
 from tuxemon.locale.locale import T
+from tuxemon.menu.menu import Menu as TuxemonMenu
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.theme import get_theme
+from tuxemon.menu.theme import clear_theme_cache, get_theme
 from tuxemon.menu.transitions import PopInClamped
 from tuxemon.session import local_session
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -48,6 +50,12 @@ class SetLanguage(PygameMenuState):
     def change_language(self, locale: str) -> None:
         T.change_language(locale)
         self.client.config.update_locale(locale)
+        # team10: apply the new language's font without restarting the game.
+        # Menus and the theme read the global CONFIG, a separate copy from
+        # client.config, so update it too and drop the cached font/theme.
+        CONFIG.update_locale(locale)
+        TuxemonMenu.font_filename = CONFIG.locale.font_file
+        clear_theme_cache()
         self.client.remove_state_by_name("SetLanguage")
         if self.main_menu:
             self.client.remove_state_by_name("ControlState")

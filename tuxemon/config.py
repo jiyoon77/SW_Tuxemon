@@ -24,6 +24,7 @@ Animation.default_transition = "out_quint"
 LOCALE_FONT_MAP = {
     "zh_CN": ("SourceHanSerifCN-Bold.otf", "SourceHanSerifCN-Bold.otf"),
     "ja": ("SourceHanSerifJP-Bold.otf", "SourceHanSerifJP-Bold.otf"),
+    "ko_KR": ("NanumGothic-Bold.ttf", "NanumGothic-Regular.ttf"),  # team10: Korean
     "default": ("PressStart2P.ttf", "Pizel.ttf"),
 }
 
