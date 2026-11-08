@@ -62,3 +62,4 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.variable_is.VariableIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.variable_lowest.VariableLowestCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.variable_set.VariableSetCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.weather_is.WeatherIsCondition

@@ -65,6 +65,7 @@ class MapTransition:
         except ValueError:
             return
         renderer.clear_overlay()
+        renderer.reset_ambient()
 
     def validate_coordinates(self, x: int, y: int) -> None:
         if not self.boundary.is_within_boundaries((x, y)):

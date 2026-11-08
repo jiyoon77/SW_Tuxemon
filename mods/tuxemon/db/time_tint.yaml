@@ -1,0 +1,11 @@
+# Colour drawn over outdoor maps for each stage of day, as [R, G, B, A].
+# Stages come from TimeHandler.stage_of_day:
+#   dawn 04-08, morning 08-12, afternoon 12-16, dusk 16-20, night 20-04
+# Alpha values above 160 are clamped to 160 so characters stay visible.
+# A missing stage falls back to the built-in default.
+
+dawn: [255, 170, 120, 40]
+morning: [0, 0, 0, 0]
+afternoon: [0, 0, 0, 0]
+dusk: [200, 90, 60, 60]
+night: [20, 30, 80, 120]
