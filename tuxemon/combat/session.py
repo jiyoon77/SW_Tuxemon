@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 class CombatSession:
     def __init__(self) -> None:
         self.event_bus = get_event_bus()
+        self.is_pvp: bool = False
         self._turn: int = 0
         self._prize: int = 0
         self._is_double: bool = False
@@ -675,6 +676,7 @@ class CombatSession:
 
     def reset(self) -> None:
         logger.debug("Resetting CombatSession")
+        self.is_pvp = False
         self.reset_turn()
         self.reset_prize()
         self.clear_tech_hits()

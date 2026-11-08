@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from enum import Enum
 from queue import Empty, Queue
 from threading import Thread
@@ -42,6 +42,7 @@ from tuxemon.network.manager import NetworkManager
 from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
 from tuxemon.platform.afk_manager import AFKManager
+from tuxemon.platform.const import buttons
 from tuxemon.platform.input_manager import InputManager
 from tuxemon.platform.input_recorder import InputRecorder
 from tuxemon.platform.tools import ScriptInputCache
@@ -62,6 +63,7 @@ if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput
     from tuxemon.prepare import DisplayContext
     from tuxemon.state.queue import QueuedState
+    from tuxemon.states.combat_state import CombatState
     from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
@@ -246,7 +248,11 @@ class BaseClient(ABC):
             logger.debug("Executed queued command.")
 
         self.input_manager.update(time_delta)
-        self.key_events = list(self.event_manager.process_events(events))
+        self.key_events = list(
+            self.event_manager.process_events(
+                self._battle_speed_events(events)
+            )
+        )
 
         self.event_data = {}
         self.event_engine.update(time_delta)
@@ -254,7 +260,15 @@ class BaseClient(ABC):
         if self.event_data:
             logger.debug(f"Event Data: {str(self.event_data)}")
 
-        self.alert_manager.update(time_delta)
+        combat = self._active_combat()
+        if combat is None:
+            self.alert_manager.update(time_delta)
+        else:
+            self.alert_manager.update(
+                time_delta,
+                accelerated_area=combat.text_area,
+                text_speed_multiplier=combat.effective_battle_speed,
+            )
         self.environment_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
@@ -264,6 +278,29 @@ class BaseClient(ABC):
             self.state = ClientState.EXITING
 
         self.active_effect_manager.update(local_session, time_delta)
+
+    def _active_combat(self) -> CombatState | None:
+        from tuxemon.states.combat_state import CombatState
+
+        return next(
+            (
+                state
+                for state in self.active_states
+                if isinstance(state, CombatState)
+            ),
+            None,
+        )
+
+    def _battle_speed_events(
+        self, events: Iterable[PlayerInput]
+    ) -> Iterator[PlayerInput]:
+        for event in events:
+            if event.button != buttons.BATTLE_SPEED:
+                yield event
+            elif (
+                event.pressed and (combat := self._active_combat()) is not None
+            ):
+                combat.cycle_battle_speed()
 
     def get_map_name(self) -> str:
         """Gets the name of the current map."""

@@ -31,6 +31,7 @@ class CombatContext:
     teams: list[NPC]
     combat_type: CombatType
     battle_mode: BattleMode
+    is_pvp: bool = False
 
     def _validate_team_count(self) -> None:
         if len(self.teams) > 2:

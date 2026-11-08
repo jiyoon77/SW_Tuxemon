@@ -78,6 +78,7 @@ class GameplayConfig(BaseModel):
     sound_volume: float = 0.2
     music_volume: float = 0.5
     combat_click_to_continue: bool = False
+    battle_speed: Literal[1, 2, 4] = 1
 
     @field_validator("sound_volume", "music_volume")
     def validate_volume(cls, v: float) -> float:
@@ -106,6 +107,7 @@ class ControlsConfig(BaseModel):
     b: str = "rshift, lshift"
     back: str = "escape"
     backspace: str = "backspace"
+    battle_speed: str = "tab"
 
 
 class ControllerConfigModel(BaseModel):
@@ -297,6 +299,10 @@ class TuxemonConfig:
     @property
     def combat_click_to_continue(self) -> bool:
         return self.config_model.gameplay.combat_click_to_continue
+
+    @property
+    def battle_speed(self) -> Literal[1, 2, 4]:
+        return self.config_model.gameplay.battle_speed
 
     @property
     def dialog_box_style(self) -> str:
