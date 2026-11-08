@@ -127,6 +127,12 @@ def get_theme(scaling: ScalingStrategy) -> Theme:
     return _theme
 
 
+def clear_theme_cache() -> None:
+    """team10: forget the cached theme so the next menu uses the current font."""
+    global _theme
+    _theme = None
+
+
 _sound_engine: Sound | None = None
 
 
