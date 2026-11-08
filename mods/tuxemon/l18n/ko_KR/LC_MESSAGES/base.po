@@ -1582,3 +1582,67 @@ msgstr "여성"
 
 msgid "pronoun_they"
 msgstr "기타"
+
+# COMBAT EXTRA ##
+msgid "attack_very_effective"
+msgstr "효과가 굉장했다!"
+
+msgid "attack_effective"
+msgstr "효과가 좋았다!"
+
+msgid "attack_resisted"
+msgstr "효과가 별로인 듯하다..."
+
+msgid "attack_weak"
+msgstr "효과가 거의 없는 듯하다..."
+
+msgid "burrow_blast_fail"
+msgstr "{user}은(는) 구멍을 파지 못했다!"
+
+msgid "burrow_blast_success"
+msgstr "{user}은(는) 구멍을 파고 숨었다!"
+
+msgid "spyderbite_miss"
+msgstr "기술이 허공으로 사라졌다."
+
+msgid "rift_dash_fail"
+msgstr "{user}은(는) 순간이동에 실패해 빈틈을 보였다!"
+
+msgid "rift_dash_success"
+msgstr "{user}은(는) 상대 뒤로 순간이동했다!"
+
+msgid "altitude_fail"
+msgstr "{user}은(는) 높이 날아오르지 못했다!"
+
+msgid "altitude_success"
+msgstr "{user}은(는) 높이 날아올랐다!"
+
+msgid "oven_fail"
+msgstr "{user}은(는) 망설이다 오븐에 뛰어들지 않았다!"
+
+msgid "oven_success"
+msgstr "{user}은(는) 불꽃을 받아들이며 뜨거운 오븐에 뛰어들었다!"
+
+msgid "wiggle_success"
+msgstr "{user}은(는) 몸을 꿈틀거렸다!"
+
+msgid "solar_synthesis_fail"
+msgstr "햇빛이 부족해 회복하지 못했다."
+
+msgid "depth_charge_fail"
+msgstr "{user}은(는) 물속으로 잠수하지 못했다!"
+
+msgid "depth_charge_success"
+msgstr "{user}은(는) 물속으로 잠수했다!"
+
+msgid "shooting_star_fail"
+msgstr "낮이라 별빛이 없어 회복하지 못했다."
+
+msgid "spyder_successful_log"
+msgstr "도끼로 통나무를 두 동강 냈다."
+
+msgid "spyder_successful_boulder"
+msgstr "쇠망치로 바위를 부숴 버렸다."
+
+msgid "bivouac_success"
+msgstr "야영으로 팀의 기운이 회복되었다!"
