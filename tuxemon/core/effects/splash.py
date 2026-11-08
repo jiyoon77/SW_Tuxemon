@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon import formula
+from tuxemon.combat.environment_bonus import (
+    apply_environment_bonus,
+    environment_message,
+    get_environment_multiplier,
+)
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
@@ -47,6 +52,8 @@ class SplashEffect(CoreEffect):
         tech.hit = tech.accuracy >= hit
 
         damage, mult = formula.simple_damage_calculate(tech, user, target)
+        env_mult = get_environment_multiplier(session, user)
+        damage = apply_environment_bonus(damage, env_mult)
         targets = session.client.combat_session.get_targets(tech, user, target)
 
         partial_hit = False
@@ -69,6 +76,9 @@ class SplashEffect(CoreEffect):
                     )
 
         extras = ["combat_splash_partial"] if partial_hit and damage else []
+        message = environment_message(env_mult)
+        if damage and message:
+            extras.append(message)
         return TechEffectResult(
             name=tech.name,
             success=bool(damage),
