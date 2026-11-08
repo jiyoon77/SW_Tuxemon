@@ -110,12 +110,17 @@ class WorldState(State):
                 self.client.npc_manager
             ),
             menu_flags=self.menu_manager.menu_flags.export(),
+            weather_slug=self.client.weather_manager.current_slug,
+            weather_elapsed=self.client.weather_manager.elapsed_time,
         )
 
     def set_state(self, session: Session, save_data: WorldSave) -> None:
         """Recreates the World from the provided saved data."""
         self.faction_manager.get_state(save_data.factions_manager)
         self.menu_manager.menu_flags.import_flags(save_data.menu_flags)
+        self.client.weather_manager.restore(
+            save_data.weather_slug, save_data.weather_elapsed
+        )
 
     def prepare_for_teleport(self) -> None:
         """

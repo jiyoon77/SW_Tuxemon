@@ -2,9 +2,15 @@
 # Each top-level key represents a current weather state (e.g., sunny, cloudy).
 # Under each key is a list of possible transitions to other weather states.
 #
+# Rolls: the weather manager checks for a transition once every
+# roll_interval_seconds of world time (default 60). On each roll the eligible
+# rules of the current weather are collected and at most one of them fires,
+# weighted by trigger_chance. Time spent in menus or combat is not counted.
+# Scripts that call "set_weather" without a slug roll once immediately.
+#
 # Attributes:
 # - next_slug: The target weather state to transition into.
-# - trigger_chance: Probability (0.0–1.0) that this transition will occur during a turn.
+# - trigger_chance: Probability (0.0–1.0) that this transition happens on a single roll.
 # - min_duration_seconds: (Optional) Minimum time in seconds before this transition becomes eligible (If None, transition is instantly eligible).
 # - max_duration_seconds: (Optional) Maximum time in seconds after which this transition is no longer allowed.
 #
@@ -26,6 +32,8 @@
 # required_temperature: warm
 # temperature: mild
 # wind: breezy
+
+roll_interval_seconds: 60
 
 sunny:
   - next_slug: cloudy

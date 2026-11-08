@@ -10,7 +10,7 @@ from tuxemon.constants import paths
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.world.weather import (
-    WorldWeatherManager,
+    DEFAULT_WEATHER_RULES_FILE,
     load_weather_transition_rules,
 )
 
@@ -24,26 +24,33 @@ class LoadWeatherAction(EventAction):
     Loads a YAML file containing weather previsions using the Pydantic schema
     and registers it with the WorldWeatherManager.
 
+    The current weather and its elapsed time are kept; only the transition
+    rules (and the roll interval) are replaced.
+
     Script usage:
         .. code-block::
 
-            load_weather <path_to_yaml_file>
+            load_weather [<path_to_yaml_file>]
 
     Script parameters:
-        model_file: Path to the YAML file (e.g., "weather_previsions.yml").
+        model_file: Path to the YAML file, relative to the mods folder.
+            Defaults to "weather_previsions.yaml".
     """
 
     name = "load_weather"
     model_file: str | None = None
 
     def start(self, session: Session) -> None:
+        filename = self.model_file or DEFAULT_WEATHER_RULES_FILE
+        yaml_path = paths.mods_folder / filename
 
-        if self.model_file is None:
-            yaml_path = paths.mods_folder / "weather_previsions.yml"
-        else:
-            yaml_path = paths.mods_folder / self.model_file
+        try:
+            rules_model = load_weather_transition_rules(yaml_path)
+        except Exception as exc:
+            logger.warning(
+                f"load_weather: could not load '{yaml_path}': {exc}"
+            )
+            return
 
-        rules_model = load_weather_transition_rules(yaml_path)
-        manager = WorldWeatherManager(rules_model=rules_model)
-        session.client.weather_manager = manager
-        logger.info("Weather manager initialized and registered in session.")
+        session.client.weather_manager.load_rules_model(rules_model)
+        logger.info(f"Weather rules loaded from '{yaml_path}'.")

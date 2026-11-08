@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.npc_manager import NPCManager
+    from tuxemon.world.ambient import AmbientRenderer
 
 
 class EntityFacing(str, Enum):
@@ -421,6 +422,9 @@ class AbstractRenderer(ABC):
     def clear_overlay(self) -> None:
         """Remove any overlay (colour or image) drawn over the map."""
 
+    def reset_ambient(self) -> None:
+        """Jump to the current weather/time tint without transitions."""
+
 
 class NullRenderer(AbstractRenderer):
     """A no-op renderer for when no map is loaded."""
@@ -452,6 +456,7 @@ class MapRenderer(AbstractRenderer):
         npc_manager: NPCManager,
         debug_renderer: DebugRenderer,
         context: DisplayContext,
+        ambient: AmbientRenderer | None = None,
     ):
         """Initializes the MapRenderer."""
         self.camera_manager = camera_manager
@@ -465,6 +470,7 @@ class MapRenderer(AbstractRenderer):
         self.map_animations = AnimationManager()
         self.bubble_manager = BubbleManager(context=context)
         self.layer_image: bool = False
+        self.ambient = ambient
 
     @property
     def label(self) -> str:
@@ -479,7 +485,13 @@ class MapRenderer(AbstractRenderer):
         self._prepare_map_rendering(current_map)
         screen_surfaces = self._get_and_position_surfaces(current_map)
         self._draw_map_and_sprites(surface, screen_surfaces, current_map)
-        if self.layer_color or self.layer_image:
+        has_overlay = bool(self.layer_color or self.layer_image)
+        if self.ambient is not None:
+            self.ambient.draw_weather(surface)
+            # A set_layer overlay replaces the time-of-day tint.
+            if not has_overlay:
+                self.ambient.draw_tint(surface)
+        if has_overlay:
             self._apply_effects(surface)
         self._apply_cinema_bars(surface)
         if CONFIG.collision_map:
@@ -489,6 +501,12 @@ class MapRenderer(AbstractRenderer):
         """Update the map animations."""
         self.camera_manager.update(dt)
         self.map_animations.update_all(dt)
+        if self.ambient is not None:
+            self.ambient.update(dt)
+
+    def reset_ambient(self) -> None:
+        if self.ambient is not None:
+            self.ambient.snap()
 
     def _prepare_map_rendering(self, current_map: AbstractMap) -> None:
         """Prepares the map renderer for drawing."""

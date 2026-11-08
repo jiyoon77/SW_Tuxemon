@@ -13,7 +13,9 @@ from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
 from tuxemon.map.tuxemon import NullMap
 from tuxemon.map.view import DebugRenderer, MapRenderer, NullRenderer
+from tuxemon.session import local_session
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
+from tuxemon.world.ambient import AmbientRenderer
 
 if TYPE_CHECKING:
     from tuxemon.prepare import DisplayContext
@@ -71,16 +73,25 @@ class LocalPygameClient(BaseClient):
             self.config,
             self.event_debug_drawer,
         )
+        self.set_renderer(self._create_map_renderer())
+
+    def _create_map_renderer(self) -> MapRenderer:
         self.debug_renderer = DebugRenderer(
             self.map_manager, self.npc_manager, self.context
         )
-        map_renderer = MapRenderer(
+        ambient = AmbientRenderer(
+            self.config,
+            self.map_manager,
+            self.weather_manager,
+            local_session.time,
+        )
+        return MapRenderer(
             self.camera_manager,
             self.npc_manager,
             self.debug_renderer,
             self.context,
+            ambient=ambient,
         )
-        self.set_renderer(map_renderer)
 
     def reset_renderer(self) -> None:
         current_map = self.map_manager.current_map
@@ -88,16 +99,7 @@ class LocalPygameClient(BaseClient):
             self.set_renderer(NullRenderer())
             logger.debug("Renderer reset to NullRenderer.")
         else:
-            self.debug_renderer = DebugRenderer(
-                self.map_manager, self.npc_manager, self.context
-            )
-            map_renderer = MapRenderer(
-                self.camera_manager,
-                self.npc_manager,
-                self.debug_renderer,
-                self.context,
-            )
-            self.set_renderer(map_renderer)
+            self.set_renderer(self._create_map_renderer())
             logger.debug("Renderer reset to MapRenderer.")
 
     def main(self) -> None:
