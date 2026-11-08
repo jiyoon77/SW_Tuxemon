@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon import formula
+from tuxemon.combat.environment_bonus import (
+    apply_environment_bonus,
+    environment_message,
+    get_environment_multiplier,
+)
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.locale.locale import T
 
@@ -49,6 +54,7 @@ class MultiAttackEffect(CoreEffect):
         hit_count = 0
         total_damage = 0
         extras: list[str] = []
+        env_mult = get_environment_multiplier(session, user)
 
         for _ in range(self.times):
             combat.set_tech_hit(user)
@@ -60,7 +66,7 @@ class MultiAttackEffect(CoreEffect):
 
             hit_count += 1
             dmg, _ = formula.simple_damage_calculate(tech, user, target)
-            total_damage += dmg
+            total_damage += apply_environment_bonus(dmg, env_mult)
 
         success = hit_count > 0
 
@@ -69,6 +75,9 @@ class MultiAttackEffect(CoreEffect):
             params = {"hit_count": hit_count}
             extract_text = T.format("combat_multiattack", params)
             extras = [extract_text]
+            message = environment_message(env_mult)
+            if total_damage and message:
+                extras.append(message)
 
         return TechEffectResult(
             name=tech.name,
