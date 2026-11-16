@@ -1,0 +1,28 @@
+# Damage modifiers per season, read by tuxemon/combat/environment_bonus.py.
+# The season comes from TimeHandler (real date + hemisphere setting).
+# Each entry uses the same fields as the "modifiers" list in
+# db/weather/weathers.yaml. With attribute "type", the multiplier applies to
+# damage dealt by a monster that has one of the listed element types.
+#
+# Weather and season multipliers are multiplied together and the result is
+# clamped to 0.5 - 1.5.
+
+spring:
+  - attribute: type
+    values: [wood]
+    multiplier: 1.1
+
+summer:
+  - attribute: type
+    values: [fire]
+    multiplier: 1.1
+
+autumn:
+  - attribute: type
+    values: [earth]
+    multiplier: 1.1
+
+winter:
+  - attribute: type
+    values: [frost]
+    multiplier: 1.1

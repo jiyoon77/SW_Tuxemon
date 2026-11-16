@@ -2091,6 +2091,12 @@ msgstr "{target}'s {stat} fell greatly."
 msgid "combat_multiattack"
 msgstr "Hit {hit_count} time(s)!"
 
+msgid "combat_environment_boost"
+msgstr "The weather and season boosted the attack!"
+
+msgid "combat_environment_weaken"
+msgstr "The weather and season weakened the attack..."
+
 # Generic notifications
 msgid "empty_slot"
 msgstr "Empty Slot"
