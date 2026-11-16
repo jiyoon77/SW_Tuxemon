@@ -2068,6 +2068,10 @@ licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 * ["Noto Sans Japanese"](https://fonts.google.com/noto/specimen/Noto+Sans+JP)
 licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
+* ["Nanum Gothic"](https://fonts.google.com/specimen/Nanum+Gothic) by
+NAVER Corporation is licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
+(license text: `mods/tuxemon/font/NanumGothic-OFL.txt`)
+
 * ["Big Bottom Cartoon Normal"](http://openfontlibrary.org/en/font/big-bottom-cartoon-normal) by
 [KarenBJones](http://openfontlibrary.org/en/member/KarenBJones) is licensed under
 [Bitstream Vera License](http://dejavu-fonts.org/wiki/License)
