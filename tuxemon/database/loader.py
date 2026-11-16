@@ -18,6 +18,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Config files kept inside a table folder that are not table entries.
+NON_TABLE_FILES = frozenset({"weather_effects.yaml"})
+
 
 def load_dict(
     item: Mapping[str, Any],
@@ -67,6 +70,8 @@ def load_files(
         return preloaded_data
 
     for entry in directory_path.iterdir():
+        if entry.name in NON_TABLE_FILES:
+            continue
         if entry.is_file() and entry.suffix in extensions:
             try:
                 if entry.suffix == ".json":

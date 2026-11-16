@@ -4934,6 +4934,18 @@ msgstr "Southern"
 msgid "menu_screen_size"
 msgstr "Screen Size (EXPERIMENTAL)"
 
+msgid "menu_time_tint"
+msgstr "Time of Day Tint"
+
+msgid "menu_weather_effects"
+msgstr "Weather Effects"
+
+msgid "menu_on"
+msgstr "On"
+
+msgid "menu_off"
+msgstr "Off"
+
 msgid "options_new_input_key0"
 msgstr "Press a key to set your new input key"
 

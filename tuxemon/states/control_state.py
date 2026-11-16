@@ -134,6 +134,36 @@ class ControlState(PygameMenuState):
             font_size=self.font_type.small,
         )
 
+        on_label = T.translate("menu_on")
+        off_label = T.translate("menu_off")
+        on_off: list[tuple[Any, ...]] = [(on_label, True), (off_label, False)]
+
+        def toggle_graphics(attribute: str) -> Callable[[Any, bool], None]:
+            def on_change(value: Any, enabled: bool) -> None:
+                self.client.config.update_attribute(
+                    "graphics", attribute, enabled
+                )
+
+            return on_change
+
+        menu.add.selector(
+            title=T.translate("menu_time_tint").upper(),
+            items=on_off,
+            selector_id="time_tint",
+            default=0 if self.client.config.time_tint else 1,
+            style="fancy",
+            onchange=toggle_graphics("time_tint"),
+            font_size=self.font_type.small,
+        )
+        menu.add.selector(
+            title=T.translate("menu_weather_effects").upper(),
+            items=on_off,
+            selector_id="weather_effects",
+            default=0 if self.client.config.weather_effects else 1,
+            style="fancy",
+            onchange=toggle_graphics("weather_effects"),
+            font_size=self.font_type.small,
+        )
 
         if not self.main_menu:
 

@@ -1,0 +1,68 @@
+# Screen effects for each weather slug. This file is read by
+# tuxemon/world/weather_effects.py and is skipped by the database loader.
+# Weathers that are not listed here draw nothing.
+#
+# overlay:    [R, G, B, A] layer drawn over the whole screen
+# particles:
+#   kind:       rain (slanted lines) or snow (small swaying dots)
+#   count:      number of particles at full strength
+#   color:      [R, G, B, A]
+#   speed:      [min, max] fall speed in native pixels per second
+#   drift:      horizontal speed in native pixels per second (rain slant)
+#   length:     rain streak length in native pixels
+#   width:      rain streak width in native pixels
+#   radius:     [min, max] snow flake radius in native pixels
+#   sway:       snow sway amplitude in native pixels
+#   sway_speed: snow sway rate (radians per second)
+# lightning:
+#   interval:   [min, max] seconds between flashes
+#   duration:   flash length in seconds
+#   color:      [R, G, B, A]
+#
+# "native pixels" are relative to the 144 px high base resolution and are
+# scaled with the window size.
+
+rain:
+  overlay: [10, 20, 40, 40]
+  particles:
+    kind: rain
+    count: 150
+    color: [180, 200, 235, 170]
+    speed: [150, 200]
+    drift: -40
+    length: 7
+    width: 1
+
+thunderstorm:
+  overlay: [5, 10, 30, 80]
+  particles:
+    kind: rain
+    count: 250
+    color: [190, 205, 240, 180]
+    speed: [200, 260]
+    drift: -70
+    length: 9
+    width: 1
+  lightning:
+    interval: [8, 20]
+    duration: 0.15
+    color: [255, 255, 255, 200]
+
+snow:
+  particles:
+    kind: snow
+    count: 100
+    color: [255, 255, 255, 220]
+    speed: [12, 24]
+    radius: [0.5, 1.0]
+    sway: 4
+    sway_speed: 1.5
+
+foggy:
+  overlay: [255, 255, 255, 90]
+
+misty:
+  overlay: [255, 255, 255, 45]
+
+cloudy:
+  overlay: [128, 128, 128, 30]

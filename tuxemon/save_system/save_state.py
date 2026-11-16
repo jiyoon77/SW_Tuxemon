@@ -13,6 +13,8 @@ TIME_FORMAT = "%Y-%m-%d %H:%M"
 class WorldSave(BaseModel):
     factions_manager: dict[str, Any] = Field(default_factory=dict)
     menu_flags: dict[str, bool] = Field(default_factory=dict)
+    weather_slug: str | None = Field(default=None)
+    weather_elapsed: float = Field(default=0.0)
 
 
 class SessionSave(BaseModel):
