@@ -53,11 +53,9 @@ class SetLanguage(PygameMenuState):
         # team10: apply the new language's font without restarting the game.
         # Menus and the theme read the global CONFIG, a separate copy from
         # client.config, so update it too and drop the cached font/theme.
-        # team10: copy only the locale/font fields in memory. CONFIG.update_locale()
-        # would save CONFIG's stale copy of every other setting over the file.
-        new_game, old_game = self.client.config.config_model.game, CONFIG.config_model.game  # team10
-        for field in ("locale", "language_font", "font_file", "thin_font_file"):  # team10
-            setattr(old_game, field, getattr(new_game, field))  # team10
+        # client.config has just saved the file, so only re-read it here;
+        # saving CONFIG would write its stale startup values over the file.
+        CONFIG.reload_config()
         TuxemonMenu.font_filename = CONFIG.locale.font_file
         clear_theme_cache()
         self.client.remove_state_by_name("SetLanguage")
