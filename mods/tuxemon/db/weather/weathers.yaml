@@ -23,25 +23,43 @@
   name: weather_misty
   temperature: mild
   wind: calm
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [shadow]
+      multiplier: 1.1
 
 - slug: windy
   name: weather_windy
   temperature: mild
   wind: windy
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [sky]
+      multiplier: 1.2
 
 - slug: freezing
   name: weather_freezing
   temperature: freezing
   wind: breezy
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [frost]
+      multiplier: 1.2
+    - attribute: type
+      values: [water]
+      multiplier: 0.9
 
 - slug: hot
   name: weather_hot
   temperature: hot
   wind: calm
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [fire]
+      multiplier: 1.2
+    - attribute: type
+      values: [frost]
+      multiplier: 0.8
 
 - slug: cloudy
   name: weather_cloudy
@@ -53,28 +71,52 @@
   name: weather_foggy
   temperature: cold
   wind: calm
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [shadow]
+      multiplier: 1.2
 
 - slug: thunderstorm
   name: weather_thunderstorm
   temperature: warm
   wind: stormy
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [lightning]
+      multiplier: 1.2
+    - attribute: type
+      values: [water]
+      multiplier: 1.1
 
 - slug: snow
   name: weather_snow
   temperature: cold
   wind: breezy
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [frost]
+      multiplier: 1.2
+    - attribute: type
+      values: [wood]
+      multiplier: 0.9
 
 - slug: rain
   name: weather_rain
   temperature: mild
   wind: gusty
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [water]
+      multiplier: 1.2
+    - attribute: type
+      values: [fire]
+      multiplier: 0.8
 
 - slug: sunny
   name: weather_sunny
   temperature: warm
   wind: calm
-  modifiers: []
+  modifiers:
+    - attribute: type
+      values: [fire]
+      multiplier: 1.1

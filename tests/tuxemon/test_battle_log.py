@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -36,7 +37,7 @@ def battle_assets():
 def battle(battle_assets):
     combat = CombatSession()
     session = Session()
-    session.set_client(MagicMock(combat_session=combat))
+    session.set_client(MagicMock(combat_session=combat, weather_manager=None))
     user = Monster.spawn_base("rockitten", 10)
     target = Monster.spawn_base("rockitten", 10)
     left = MagicMock(spec=NPC, monsters=[user])
@@ -117,7 +118,11 @@ def test_cancelled_queue_action_has_no_log(battle):
 
 
 def test_spread_damage_uses_ids_and_actual_hp_loss(battle, monkeypatch):
-    _, combat, user, target = battle
+    session, combat, user, target = battle
+    monkeypatch.setattr(session.time, "hemisphere", "northern")
+    monkeypatch.setattr(
+        session.time, "get_current_time", lambda: datetime(2026, 10, 15, 12)
+    )
     other_target = Monster.spawn_base("rockitten", 10)
     assert target.name == other_target.name
     assert target.instance_id != other_target.instance_id
@@ -140,16 +145,16 @@ def test_spread_damage_uses_ids_and_actual_hp_loss(battle, monkeypatch):
     assert {entry.target_name for entry in (first, second)} == {target.name}
     assert {entry.target_id: entry.hp_change for entry in (first, second)} == {
         target.instance_id: -7,
-        other_target.instance_id: -20,
+        other_target.instance_id: -21,
     }
     assert target.current_hp == 0
-    assert other_target.current_hp == 3
+    assert other_target.current_hp == 2
     assert technique_result.event_type == "technique_result"
     assert {entry.action_id for entry in combat.battle_log} == {1}
     assert [entry.sequence for entry in combat.battle_log] == [1, 2, 3]
-    assert result.damage == 20
+    assert result.damage == 21
     (reward_damage,) = combat.damage_tracker.get_damages(user, other_target)
-    assert reward_damage.damage == 20
+    assert reward_damage.damage == 21
 
 
 def test_zero_hp_change_has_no_damage_event(battle, monkeypatch):

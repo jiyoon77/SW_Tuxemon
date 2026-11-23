@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon import formula
+from tuxemon.combat.environment_bonus import (
+    apply_environment_bonus,
+    environment_message,
+    get_environment_multiplier,
+)
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
@@ -26,7 +31,8 @@ class DamageEffect(CoreEffect):
 
     This effect is triggered when ``damage`` is defined in a technique's
     effect list. It calculates damage based on the technique, user, and
-    target, then reduces the target's HP accordingly.
+    target, then reduces the target's HP accordingly. The damage is scaled
+    by the weather/season bonus of the user's element types.
 
     **Example**
 
@@ -56,11 +62,18 @@ class DamageEffect(CoreEffect):
             enemy_side = combat.get_own_monsters(target)
 
         spread = sum(1 for m in targets if m in enemy_side) > 1
+        env_mult = (
+            get_environment_multiplier(session, user) if targets else 1.0
+        )
 
         for monster in targets:
-            dmg, m = formula.simple_damage_calculate(tech, user, monster)
+            base, m = formula.simple_damage_calculate(tech, user, monster)
+            dmg = apply_environment_bonus(base, env_mult)
             if spread and monster in enemy_side:
                 dmg = int(dmg * MULTI_TARGET_MODIFIER)
+            # keep at least 1 after every reduction unless it was 0 already
+            if base > 0:
+                dmg = max(1, dmg)
             hp_before = monster.current_hp
             monster.current_hp = max(0, hp_before - dmg)
             hp_change = monster.current_hp - hp_before
@@ -74,10 +87,16 @@ class DamageEffect(CoreEffect):
                 # to avoid double registration in the self._damage_map
                 combat.enqueue_damage(user, monster, dmg)
 
+        extras: list[str] = []
+        message = environment_message(env_mult)
+        if damage and message:
+            extras.append(message)
+
         return TechEffectResult(
             name=tech.name,
             damage=damage,
             element_multiplier=mult,
             should_tackle=bool(damage),
             success=bool(damage),
+            extras=extras,
         )
