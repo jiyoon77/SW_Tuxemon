@@ -115,7 +115,7 @@ class CombatAnimations(Menu[None], ABC):
             surface.blit(self._speed_label, rect)
 
     def update_speed_label(self, speed: int) -> None:
-        self._speed_label = self.shadow_text(f"Tab x{speed}")
+        self._speed_label = self.shadow_text(f"x{speed}")
 
     def refresh_ui(self) -> None:
         """Call this whenever HP or EXP changes."""
