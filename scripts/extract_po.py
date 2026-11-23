@@ -2,9 +2,9 @@
 # team10: Korean translation helper for Tuxemon .po files.
 """
 Usage:
-    python mods/team10/tools/extract_po.py extract  <src.po> <out.po> menu_ combat_
-    python mods/team10/tools/extract_po.py check    <en.po>  <ko.po>
-    python mods/team10/tools/extract_po.py missing  <en.po>  <ko.po> menu_ combat_
+    python scripts/extract_po.py extract  <src.po> <out.po> menu_ combat_
+    python scripts/extract_po.py check    <en.po>  <ko.po>
+    python scripts/extract_po.py missing  <en.po>  <ko.po> menu_ combat_
 """
 from __future__ import annotations
 
