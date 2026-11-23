@@ -311,3 +311,113 @@ def test_splash_effect():
     assert target.current_hp == 440
     assert result.element_multiplier == 1.0
     assert result.extras == [eb.BOOST_MESSAGE]
+
+
+def test_splash_partial_hit_has_message():
+    from tuxemon.core.effects.splash import SplashEffect
+
+    s, target = combat_session(RAIN)
+    s.client.combat_session.get_tech_hit.return_value = 1.0
+    t = tech()
+    t.accuracy = 0.0
+    with (
+        patch(
+            "tuxemon.combat.environment_bonus._default_season_modifiers",
+            return_value={},
+        ),
+        patch(
+            "tuxemon.core.effects.splash.formula.simple_damage_calculate",
+            return_value=(50, 1.0),
+        ),
+    ):
+        result = SplashEffect(divisor=2).apply_tech_target(
+            s, t, monster("water"), target
+        )
+    # 50 * 1.2 = 60, halved on a miss
+    assert result.damage == 30
+    assert target.current_hp == 470
+    assert result.extras == ["combat_splash_partial", eb.BOOST_MESSAGE]
+
+
+# --- minimum damage after every reduction ------------------------------------
+
+
+def spread_session(weather_mods):
+    """Two enemies are hit, so the multi-target reduction applies."""
+    s, target = combat_session(weather_mods)
+    other = monster("earth")
+    other.current_hp = 500
+    cs = s.client.combat_session
+    cs.get_targets.return_value = [target, other]
+    cs.get_own_monsters.return_value = [target, other]
+    return s, target, other
+
+
+@pytest.mark.parametrize(
+    "base,expected",
+    [
+        pytest.param(2, 1, id="kept_at_one"),
+        pytest.param(0, 0, id="zero_stays_zero"),
+    ],
+)
+def test_damage_effect_min_one_after_spread(base, expected):
+    # 2 * 0.5 = 1, then int(1 * 0.75) = 0 without the final floor
+    s, target, other = spread_session([mod("water", 0.5)])
+    with (
+        patch(
+            "tuxemon.combat.environment_bonus._default_season_modifiers",
+            return_value={},
+        ),
+        patch(
+            "tuxemon.core.effects.damage.formula.simple_damage_calculate",
+            return_value=(base, 1.0),
+        ),
+    ):
+        result = DamageEffect().apply_tech_target(
+            s, tech(), monster("water"), target
+        )
+    assert result.damage == expected
+    assert target.current_hp == 500 - expected
+    assert other.current_hp == 500 - expected
+    assert result.extras == ([eb.WEAKEN_MESSAGE] if expected else [])
+
+
+@pytest.mark.parametrize(
+    "base,hit,expected,extras",
+    [
+        pytest.param(2, True, 1, [eb.WEAKEN_MESSAGE], id="spread_kept_at_one"),
+        pytest.param(
+            2,
+            False,
+            1,
+            ["combat_splash_partial", eb.WEAKEN_MESSAGE],
+            id="miss_and_spread_kept_at_one",
+        ),
+        pytest.param(0, True, 0, [], id="zero_stays_zero"),
+    ],
+)
+def test_splash_effect_min_one_after_reduction(base, hit, expected, extras):
+    from tuxemon.core.effects.splash import SplashEffect
+
+    s, target, other = spread_session([mod("water", 0.5)])
+    t = tech()
+    if not hit:
+        s.client.combat_session.get_tech_hit.return_value = 1.0
+        t.accuracy = 0.0
+    with (
+        patch(
+            "tuxemon.combat.environment_bonus._default_season_modifiers",
+            return_value={},
+        ),
+        patch(
+            "tuxemon.core.effects.splash.formula.simple_damage_calculate",
+            return_value=(base, 1.0),
+        ),
+    ):
+        result = SplashEffect(divisor=2).apply_tech_target(
+            s, t, monster("water"), target
+        )
+    assert result.damage == expected
+    assert target.current_hp == 500 - expected
+    assert other.current_hp == 500 - expected
+    assert result.extras == extras

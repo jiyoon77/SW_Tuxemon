@@ -51,9 +51,9 @@ class SplashEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        damage, mult = formula.simple_damage_calculate(tech, user, target)
+        base, mult = formula.simple_damage_calculate(tech, user, target)
         env_mult = get_environment_multiplier(session, user)
-        damage = apply_environment_bonus(damage, env_mult)
+        damage = apply_environment_bonus(base, env_mult)
         targets = session.client.combat_session.get_targets(tech, user, target)
 
         partial_hit = False
@@ -65,6 +65,9 @@ class SplashEffect(CoreEffect):
         if sum(1 for m in targets if m in enemy_side) > 1:
             damage = int(damage * 0.75)
 
+        # keep at least 1 after every reduction unless it was 0 already
+        if base > 0:
+            damage = max(1, damage)
 
         if targets:
             for monster in targets:

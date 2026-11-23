@@ -67,10 +67,13 @@ class DamageEffect(CoreEffect):
         )
 
         for monster in targets:
-            dmg, m = formula.simple_damage_calculate(tech, user, monster)
-            dmg = apply_environment_bonus(dmg, env_mult)
+            base, m = formula.simple_damage_calculate(tech, user, monster)
+            dmg = apply_environment_bonus(base, env_mult)
             if spread and monster in enemy_side:
                 dmg = int(dmg * MULTI_TARGET_MODIFIER)
+            # keep at least 1 after every reduction unless it was 0 already
+            if base > 0:
+                dmg = max(1, dmg)
             monster.current_hp = max(0, monster.current_hp - dmg)
             if monster == target:
                 damage, mult = dmg, m
