@@ -349,3 +349,28 @@ random_names:
       - Solus
       - Debian
       - Red
+  ko_kr:  # Korean names (team10)
+    male:
+      - 민준
+      - 서준
+      - 도윤
+      - 하준
+      - 지호
+    female:
+      - 서연
+      - 지우
+      - 하은
+      - 수아
+      - 지아
+    neutral:
+      - 펭귄
+      - 펄서
+      - 조약돌
+      - 산들
+      - 쪽빛
+      - 리누스
+      - 우분투
+      - 페도라
+      - 솔러스
+      - 데비안
+      - 레드
