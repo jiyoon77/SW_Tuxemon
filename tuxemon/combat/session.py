@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
+from tuxemon.combat.battle_log import BattleLogEntry
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.damage_tracker import DamageTracker
 from tuxemon.combat.field_monsters import FieldMonsters
@@ -54,6 +55,9 @@ class CombatSession:
         self.menu_visibility_map: dict[str, bool] = {}
         self.damage_tracker = DamageTracker()
         self.action_queue = ActionQueue()
+        self.battle_log: list[BattleLogEntry] = []
+        self.current_action_id: int | None = None
+        self._action_count = 0
 
     # Players management
     @property
@@ -618,11 +622,54 @@ class CombatSession:
         logger.debug(f"[PreCheck End] {monster.name} using {technique.slug}")
         return technique
 
+    def record_battle_event(
+        self,
+        event_type: Literal["technique_result", "damage"],
+        actor: Monster,
+        target: Monster,
+        technique: Technique,
+        outcome: Literal["success", "failure"],
+        hp_change: int | None = None,
+    ) -> None:
+        action_id = self.current_action_id
+        if action_id is None:
+            return
+
+        self.battle_log.append(
+            BattleLogEntry(
+                turn=self.turn,
+                action_id=action_id,
+                sequence=len(self.battle_log) + 1,
+                event_type=event_type,
+                actor_id=actor.instance_id,
+                actor_name=actor.name,
+                target_id=target.instance_id,
+                target_name=target.name,
+                technique_slug=technique.slug,
+                technique_name=technique.name,
+                outcome=outcome,
+                hp_change=hp_change,
+            )
+        )
+
     def apply_technique(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> tuple[TechEffectResult, StatusEffectResult | None]:
         pre_status = user.status.current_status
-        result = tech.use(session, user, target)
+        if tech.slug not in {"swap", "menu_run", "menu_forfeit"}:
+            self._action_count += 1
+            self.current_action_id = self._action_count
+        try:
+            result = tech.use(session, user, target)
+            self.record_battle_event(
+                "technique_result",
+                user,
+                target,
+                tech,
+                "success" if result.success else "failure",
+            )
+        finally:
+            self.current_action_id = None
         logger.debug(
             f"{user.name} used {tech.slug} on {target.name} > success={result.success}"
         )
@@ -684,6 +731,9 @@ class CombatSession:
         self.reset_combat_type()
         self.menu_visibility_map.clear()
         self.damage_tracker.clear_damage()
+        self.battle_log.clear()
+        self.current_action_id = None
+        self._action_count = 0
         self.action_queue.clear_queue()
         self.action_queue.clear_history()
         self.action_queue.clear_pending()

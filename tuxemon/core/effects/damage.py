@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 # damage each enemy takes when more than one of them is hit at once
 MULTI_TARGET_MODIFIER = 0.75
 
+
 @dataclass
 class DamageEffect(CoreEffect):
     """
@@ -46,14 +47,13 @@ class DamageEffect(CoreEffect):
         targets: list[Monster] = []
         enemy_side: Sequence[Monster] = []
 
-        hit = session.client.combat_session.get_tech_hit(user)
+        combat = session.client.combat_session
+        hit = combat.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
         if tech.hit:
-            targets = session.client.combat_session.get_targets(
-                tech, user, target
-            )
-            enemy_side = session.client.combat_session.get_own_monsters(target)
+            targets = combat.get_targets(tech, user, target)
+            enemy_side = combat.get_own_monsters(target)
 
         spread = sum(1 for m in targets if m in enemy_side) > 1
 
@@ -61,14 +61,18 @@ class DamageEffect(CoreEffect):
             dmg, m = formula.simple_damage_calculate(tech, user, monster)
             if spread and monster in enemy_side:
                 dmg = int(dmg * MULTI_TARGET_MODIFIER)
-            monster.current_hp = max(0, monster.current_hp - dmg)
+            hp_before = monster.current_hp
+            monster.current_hp = max(0, hp_before - dmg)
+            hp_change = monster.current_hp - hp_before
+            if hp_change < 0:
+                combat.record_battle_event(
+                    "damage", user, monster, tech, "success", hp_change
+                )
             if monster == target:
                 damage, mult = dmg, m
             else:
                 # to avoid double registration in the self._damage_map
-                session.client.combat_session.enqueue_damage(
-                    user, monster, dmg
-                )
+                combat.enqueue_damage(user, monster, dmg)
 
         return TechEffectResult(
             name=tech.name,
