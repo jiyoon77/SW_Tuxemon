@@ -54,7 +54,11 @@ from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
 from tuxemon.trade_manager import TradeManager
-from tuxemon.world.weather import WorldWeatherManager
+from tuxemon.world.weather import (
+    DEFAULT_WEATHER_RULES_FILE,
+    WorldWeatherManager,
+    load_default_weather_rules,
+)
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
@@ -188,7 +192,11 @@ class BaseClient(ABC):
         self.environment_manager = EnvironmentManager(self.context)
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
-        self.weather_manager = WorldWeatherManager()
+        self.weather_manager = WorldWeatherManager(
+            rules_model=load_default_weather_rules(
+                paths.mods_folder / DEFAULT_WEATHER_RULES_FILE
+            )
+        )
         self.cipher_processor: CipherProcessor | None = None
         self.alert_manager = AlertManager(self.event_bus)
         self.shop_manager = ShopManager()
@@ -270,7 +278,8 @@ class BaseClient(ABC):
                 text_speed_multiplier=combat.effective_battle_speed,
             )
         self.environment_manager.update(time_delta)
-        self.weather_manager.update(time_delta)
+        if self.is_world_active():
+            self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         self.rumble_manager.update(time_delta)
 
@@ -301,6 +310,11 @@ class BaseClient(ABC):
                 event.pressed and (combat := self._active_combat()) is not None
             ):
                 combat.cycle_battle_speed()
+
+    def is_world_active(self) -> bool:
+        """True while the world screen is the top state (no menu, no combat)."""
+        current = self.state_manager.current_state
+        return current is not None and current.name == "WorldState"
 
     def get_map_name(self) -> str:
         """Gets the name of the current map."""

@@ -13,7 +13,23 @@ jobs:
     container:
       image: bilelmoussaoui/flatpak-github-actions:kde-6.3
       options: --privileged
+      # Host folders with preinstalled SDKs the flatpak build does not use.
+      # They are mounted so the first step can delete them; otherwise the
+      # runner disk fills up while flatpak-builder exports the build.
+      volumes:
+        - /usr/share/dotnet:/host/dotnet
+        - /usr/local/lib/android:/host/android
+        - /opt/ghc:/host/ghc
+        - /usr/local/.ghcup:/host/ghcup
+        - /opt/hostedtoolcache/CodeQL:/host/codeql
+        - /usr/share/swift:/host/swift
     steps:
+    - name: Free disk space
+      run: |
+        df -h /
+        rm -rf /host/dotnet/* /host/android/* /host/ghc/* /host/ghcup/* /host/codeql/* /host/swift/*
+        df -h /
+
     - name: Show environment variables
       run: >
         echo IS_RELEASE: ${{ inputs.IS_RELEASE }}

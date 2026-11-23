@@ -18,6 +18,9 @@ from tuxemon.weather import Weather
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_ROLL_INTERVAL_SECONDS = 60.0
+DEFAULT_WEATHER_RULES_FILE = "weather_previsions.yaml"
+
 
 @dataclass
 class WeatherTransitionRecord:
@@ -30,13 +33,49 @@ class WeatherTransitionRecord:
 def load_weather_transition_rules(
     filepath: Path,
 ) -> WeatherTransitionRulesModel:
-    """Loads and validates the weather transition rules from a YAML file."""
+    """
+    Loads and validates the weather transition rules from a YAML file.
+
+    Two layouts are accepted. The model layout keeps the rules under a
+    ``transitions`` key. The flat layout (used by weather_previsions.yaml)
+    has the weather slugs at the top level next to an optional
+    ``roll_interval_seconds`` key.
+    """
+    data = load_yaml(filepath)
+    if not isinstance(data, dict):
+        raise ValueError(f"{filepath} does not contain a mapping")
+
+    if "transitions" not in data:
+        data = dict(data)
+        interval = data.pop(
+            "roll_interval_seconds", DEFAULT_ROLL_INTERVAL_SECONDS
+        )
+        data = {"transitions": data, "roll_interval_seconds": interval}
+
+    return WeatherTransitionRulesModel(**data)
+
+
+def load_default_weather_rules(
+    filepath: Path,
+) -> WeatherTransitionRulesModel | None:
+    """
+    Loads the transition rules used at startup. Returns None (and logs a
+    warning) when the file is missing or invalid, so the game can still
+    start with fixed weather.
+    """
+    if not filepath.exists():
+        logger.warning(
+            f"Weather rules file '{filepath}' not found, weather will not change."
+        )
+        return None
     try:
-        data = load_yaml(filepath)
-        return WeatherTransitionRulesModel(**data)
+        return load_weather_transition_rules(filepath)
     except Exception as exc:
-        logger.error(f"Error loading WeatherTransitionRulesModel: {exc}")
-        raise
+        logger.warning(
+            f"Could not load weather rules from '{filepath}': {exc}. "
+            "Weather will not change."
+        )
+        return None
 
 
 class WeatherTransitionRule(BaseModel):
@@ -82,6 +121,11 @@ class WeatherTransitionRulesModel(BaseModel):
     """
 
     transitions: dict[str, list[WeatherTransitionRule]]
+    roll_interval_seconds: float = Field(
+        DEFAULT_ROLL_INTERVAL_SECONDS,
+        gt=0,
+        description="Seconds of world time between two transition rolls.",
+    )
 
     @model_validator(mode="after")
     def check_cumulative_chance(self) -> Any:
@@ -123,9 +167,12 @@ class WorldWeatherManager:
         initial_slug: str = "sunny",
         rules_model: WeatherTransitionRulesModel | None = None,
         seed: int | None = None,
+        roll_interval_seconds: float | None = None,
     ) -> None:
         self._current_weather: Weather | None = None
         self._elapsed_duration_seconds: float = 0.0
+        self._time_since_roll: float = 0.0
+        self.roll_interval_seconds = DEFAULT_ROLL_INTERVAL_SECONDS
         self._transition_rules_model: WeatherTransitionRulesModel | None = None
         self._last_transition_rule: WeatherTransitionRule | None = None
         self.transition_history: list[WeatherTransitionRecord] = []
@@ -136,6 +183,9 @@ class WorldWeatherManager:
 
         if rules_model:
             self.load_rules_model(rules_model)
+
+        if roll_interval_seconds is not None:
+            self.roll_interval_seconds = roll_interval_seconds
 
         self.set_weather(initial_slug)
 
@@ -157,6 +207,7 @@ class WorldWeatherManager:
 
     def load_rules_model(self, model: WeatherTransitionRulesModel) -> None:
         self._transition_rules_model = model
+        self.roll_interval_seconds = model.roll_interval_seconds
         self.validate_rules()
         logger.info(
             f"Loaded transition rules model with {len(model.transitions)} weather states."
@@ -166,9 +217,13 @@ class WorldWeatherManager:
         if not self._transition_rules_model:
             return
 
+        known = db.database.get("weather")
+        if not known:
+            return
+
         for slug, rules in self._transition_rules_model.transitions.items():
             for r in rules:
-                if r.next_slug not in db.database["weather"]:
+                if r.next_slug not in known:
                     logger.warning(
                         f"Transition rule points to unknown weather slug '{r.next_slug}'"
                     )
@@ -250,9 +305,34 @@ class WorldWeatherManager:
                 f"Could not force transition to unknown slug: {new_slug}"
             )
 
+    def restore(self, slug: str | None, elapsed: float = 0.0) -> None:
+        """
+        Restores the weather from save data. Unknown or missing slugs fall
+        back to sunny. Nothing is added to the transition history.
+        """
+        known = db.database.get("weather", {})
+        if not slug or slug not in known:
+            if slug:
+                logger.warning(
+                    f"Saved weather '{slug}' is unknown, using sunny."
+                )
+            slug = "sunny"
+            elapsed = 0.0
+
+        if self.set_weather(slug):
+            self._elapsed_duration_seconds = max(0.0, float(elapsed))
+        self._time_since_roll = 0.0
+
     def update(self, dt: float) -> None:
+        """
+        Advances the weather clock. A transition roll only happens once
+        every ``roll_interval_seconds``.
+        """
         self._elapsed_duration_seconds += dt
-        self.advance_turn()
+        self._time_since_roll += dt
+        if self._time_since_roll >= self.roll_interval_seconds:
+            self._time_since_roll %= self.roll_interval_seconds
+            self.advance_turn()
 
     def advance_turn(self) -> None:
         if not self._current_weather or not self._transition_rules_model:

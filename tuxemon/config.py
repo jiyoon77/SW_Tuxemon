@@ -90,6 +90,8 @@ class GraphicsConfig(BaseModel):
     menu_border: str = "gfx/borders/borders.png"
     menu_cursor: str = "gfx/arrow.png"
     menu_sound: str = "sound_menu_select"
+    time_tint: bool = True
+    weather_effects: bool = True
 
 
 class PlayerConfig(BaseModel):
@@ -319,6 +321,14 @@ class TuxemonConfig:
     @property
     def menu_sound(self) -> str:
         return self.config_model.graphics.menu_sound
+
+    @property
+    def time_tint(self) -> bool:
+        return self.config_model.graphics.time_tint
+
+    @property
+    def weather_effects(self) -> bool:
+        return self.config_model.graphics.weather_effects
 
     @property
     def animation_speed(self) -> float:

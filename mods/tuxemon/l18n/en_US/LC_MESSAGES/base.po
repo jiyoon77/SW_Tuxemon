@@ -2091,6 +2091,12 @@ msgstr "{target}'s {stat} fell greatly."
 msgid "combat_multiattack"
 msgstr "Hit {hit_count} time(s)!"
 
+msgid "combat_environment_boost"
+msgstr "The weather and season boosted the attack!"
+
+msgid "combat_environment_weaken"
+msgstr "The weather and season weakened the attack..."
+
 # Generic notifications
 msgid "empty_slot"
 msgstr "Empty Slot"
@@ -4933,6 +4939,18 @@ msgstr "Southern"
 
 msgid "menu_screen_size"
 msgstr "Screen Size (EXPERIMENTAL)"
+
+msgid "menu_time_tint"
+msgstr "Time of Day Tint"
+
+msgid "menu_weather_effects"
+msgstr "Weather Effects"
+
+msgid "menu_on"
+msgstr "On"
+
+msgid "menu_off"
+msgstr "Off"
 
 msgid "options_new_input_key0"
 msgstr "Press a key to set your new input key"
