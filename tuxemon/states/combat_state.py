@@ -114,6 +114,8 @@ EVENT_HANDLERS: dict[str, str] = {
     "combat_dialog": "_on_combat_dialog",
 }
 
+BATTLE_SPEEDS = (1, 2, 4)
+
 
 class WaitForInputState(State):
     """Just wait for input blocking everything"""
@@ -157,7 +159,7 @@ class CombatState(CombatAnimations):
         **kwargs: Any,
     ) -> None:
         self.session = context.session
-        self.phase: CombatPhase | None = None
+        self.phase: CombatPhase | None = CombatPhase.BEGIN
         self._method_cache = MethodAnimationCache(AnimationManager())
         self.text_anim = TextAnimationManager()
         self._decision_queue: deque[Monster] = deque()
@@ -169,6 +171,7 @@ class CombatState(CombatAnimations):
         # player => home areas on screen
         super().__init__(client=client, teams=context.teams, **kwargs)
         self.combat_session = self.client.combat_session
+        self.combat_session.is_pvp = context.is_pvp
         self.unregister_event_handlers()
         self.register_event_handlers()
         self.machine = CombatMachine(self.combat_session)
@@ -177,6 +180,8 @@ class CombatState(CombatAnimations):
         self.combat_session.set_players(context.teams)
         self._lock_update = self.client.config.combat_click_to_continue
         self.create_combat_dialog()
+        if not self.combat_session.is_pvp:
+            self.update_speed_label(self.effective_battle_speed)
         self.transition_phase(CombatPhase.BEGIN)
         self.task(
             partial(setattr, self, "phase", CombatPhase.READY), interval=3
@@ -239,11 +244,37 @@ class CombatState(CombatAnimations):
 
         return False
 
+    @property
+    def effective_battle_speed(self) -> int:
+        if self.combat_session.is_pvp:
+            return 1
+        return self.client.config.battle_speed
+
+    def cycle_battle_speed(self) -> None:
+        if self.combat_session.is_pvp or self.phase is None:
+            return
+
+        config = self.client.config
+        index = BATTLE_SPEEDS.index(config.battle_speed)
+        speed = BATTLE_SPEEDS[(index + 1) % len(BATTLE_SPEEDS)]
+        config.update_attribute("gameplay", "battle_speed", speed, save=False)
+        self.update_speed_label(speed)
+        try:
+            config.save_config()
+        except (OSError, RuntimeError):
+            logger.warning("Could not save battle speed.", exc_info=True)
+            self.dialog.alert(T.translate("save_failure"), self.text_area)
+
     def update(self, dt: float) -> None:
-        """Update the combat state."""
-        super().update(dt)
-        self.text_anim.update_text_animation(dt)
-        self.update_combat_phase()
+        """Update combat in normal-sized steps at the chosen playback speed."""
+        # A large step can make multiple tasks fire in insertion order
+        # instead of in deadline order.
+        for _ in range(self.effective_battle_speed):
+            super().update(dt)
+            self.text_anim.update_text_animation(dt)
+            self.update_combat_phase()
+            if self.phase is None:
+                break
 
     def transition_phase(self, phase: CombatPhase) -> None:
         """

@@ -59,11 +59,19 @@ class AlertManager:
         self._active_area: TextArea | None = None
         self._active_split_state: SplitAlertState | None = None
 
-    def update(self, dt: float) -> None:
+    def update(
+        self,
+        dt: float,
+        *,
+        accelerated_area: TextArea | None = None,
+        text_speed_multiplier: int = 1,
+    ) -> None:
         area = self._active_area
         if area is None or not area.drawing_text:
             return
 
+        if area is accelerated_area:
+            dt *= text_speed_multiplier
         self._time_accum += dt
         while self._time_accum >= self.character_delay and area.drawing_text:
             try:
