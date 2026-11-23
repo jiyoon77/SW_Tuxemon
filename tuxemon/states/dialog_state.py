@@ -11,6 +11,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon.graphics import load_and_scale
+from tuxemon.menu.controller import MenuState  # team10
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
@@ -135,6 +136,11 @@ class DialogState(PopUpMenu[None]):
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """Handle player input to fast-forward or advance dialog lines."""
+        # team10: on_open() starts the text when the open animation ends and
+        # redraws the box background. A press before that started the text
+        # early, and on_open() then erased the characters already drawn.
+        if self.state_controller.state == MenuState.OPENING:  # team10
+            return None  # team10
         if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
