@@ -254,7 +254,7 @@ class ControlState(PygameMenuState):
             metric = T.translate("menu_units_metric")
             imperial = T.translate("menu_units_imperial")
             units: list[tuple[Any, ...]] = []
-            units = [(metric, metric), (imperial, imperial)]
+            units = [(metric, "metric"), (imperial, "imperial")]  # team10: save the value, not the translation
             menu.add.selector(
                 title=T.translate("menu_units").upper(),
                 items=units,
@@ -276,7 +276,7 @@ class ControlState(PygameMenuState):
             north_hemi = T.translate("menu_hemisphere_north")
             south_hemi = T.translate("menu_hemisphere_south")
             hemispheres: list[tuple[Any, ...]] = []
-            hemispheres = [(north_hemi, north_hemi), (south_hemi, south_hemi)]
+            hemispheres = [(north_hemi, "northern"), (south_hemi, "southern")]  # team10: save the value, not the translation
             menu.add.selector(
                 title=T.translate("menu_hemisphere").upper(),
                 items=hemispheres,
