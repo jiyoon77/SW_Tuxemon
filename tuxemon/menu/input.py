@@ -54,10 +54,14 @@ class NameDataLoader:
                     self._name_data["random_names"][fallback_language][gender]
                 )
             except (KeyError, IndexError) as e:
-                raise ValueError(
-                    f"Names not found for language '{language}' "
-                    f"or fallback language '{fallback_language}' and gender '{gender}'."
-                ) from e
+                # team10: a language without its own names uses the English ones
+                english = self._name_data["random_names"].get("en_us", {}).get(gender)  # team10
+                if not english:  # team10
+                    raise ValueError(
+                        f"Names not found for language '{language}' "
+                        f"or fallback language '{fallback_language}' and gender '{gender}'."
+                    ) from e
+                name = random.choice(english)  # team10
         return str(name)
 
 
