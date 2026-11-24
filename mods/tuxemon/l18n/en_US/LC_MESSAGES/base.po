@@ -1110,12 +1110,6 @@ msgstr "TM: All In"
 msgid "tm_all_in_description"
 msgstr "Technique Manual that teaches the All In technique."
 
-msgid "tm_leaf_barrage"
-msgstr "TM: Leaf Barrage"
-
-msgid "tm_all_in_description"
-msgstr "Technique Manual that teaches the Leaf Barrage technique."
-
 msgid "tm_solar_synthesis"
 msgstr "TM: Solar Synthesis"
 
@@ -4305,7 +4299,8 @@ msgstr "Route E"
 msgid "crystal_town"
 msgstr "Crystal"
 
-msgid "crystal_town"
+# team10: was a second "crystal_town"; the map slug is obsidian_town
+msgid "obsidian_town"
 msgstr "Obsidian"
 
 msgid "taba_town"
