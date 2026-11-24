@@ -3197,6 +3197,9 @@ msgid "routee"
 msgstr "E 도로"
 
 msgid "crystal_town"
+msgstr "크리스털"
+
+msgid "obsidian_town"
 msgstr "옵시디언"
 
 msgid "taba_town"
@@ -5565,7 +5568,7 @@ msgid "dusty_datalog_description"
 msgstr "조각난 글과 음성 기록이 담긴 디지털 책."
 
 msgid "tm_all_in_description"
-msgstr "잎사귀 난사 기술을 가르쳐 주는 기술서."
+msgstr "올인 기술을 가르쳐 주는 기술서."
 
 msgid "tm_solar_synthesis_description"
 msgstr "광합성 기술을 가르쳐 주는 기술서."
