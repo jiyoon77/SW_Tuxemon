@@ -67,8 +67,7 @@ class PoisonedEffect(CoreEffect):
                 poisoned = True
                 hp_before = host.current_hp
                 host.current_hp = max(0, hp_before - int(damage))
-                if (combat := session.combat_session) is not None:
-                    combat.record_hp_change(host, hp_before, status=status)
+                status.record_hp_change(session, host, hp_before)
             else:
                 status.use_failure = T.format("combat_state_immune", params)
                 host.status.clear_status(session)

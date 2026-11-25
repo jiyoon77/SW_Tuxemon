@@ -46,7 +46,9 @@ class HarpoonedEffect(CoreEffect):
         host = status.host
         if status.has_phase(EffectPhase.SWAP_MONSTER):
             damage = host.hp // self.divisor
-            host.current_hp = max(0, host.current_hp - damage)
+            hp_before = host.current_hp
+            host.current_hp = max(0, hp_before - damage)
             if host.is_fainted:
                 host.current_hp = 0
+            status.record_hp_change(session, host, hp_before)
         return StatusEffectResult(name=status.name, success=True)

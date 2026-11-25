@@ -56,7 +56,11 @@ class MoneyEffect(CoreEffect):
             params = {"name": user.name.upper(), "gold": formatted_amount}
             extra = [T.format("combat_state_gold", params)]
         else:
-            user.current_hp = max(0, user.current_hp - damage)
+            hp_before = user.current_hp
+            user.current_hp = max(0, hp_before - damage)
+            session.client.combat_session.record_hp_change(
+                user, hp_before, actor=user, technique=tech
+            )
         return TechEffectResult(
             name=tech.name,
             success=tech.hit,

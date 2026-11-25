@@ -59,10 +59,18 @@ class LifeLeechEffect(CoreEffect):
             logger.debug(
                 f"[LifeLeech] {linked.name} leeched {damage} HP from {host.name}"
             )
-            host.current_hp = max(0, host.current_hp - damage)
-            linked.current_hp = min(linked.hp, linked.current_hp + damage)
+            hp_before = host.current_hp
+            host.current_hp = max(0, hp_before - damage)
+            status.record_hp_change(session, host, hp_before, actor=linked)
+            hp_before = linked.current_hp
+            linked.current_hp = min(linked.hp, hp_before + damage)
+            status.record_hp_change(session, linked, hp_before, actor=linked)
             lifeleech = True
-        if linked and linked.is_fainted and status.has_phase(EffectPhase.PERFORM_STATUS):
+        if (
+            linked
+            and linked.is_fainted
+            and status.has_phase(EffectPhase.PERFORM_STATUS)
+        ):
             host.status.clear_status(session)
 
         return StatusEffectResult(name=status.name, success=lifeleech)

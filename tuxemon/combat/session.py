@@ -604,7 +604,10 @@ class CombatSession:
             phase = EffectPhase.SWAP_MONSTER
             entry_status = monster.status.current_status
             if entry_status:
-                entry_status.use(session, phase)
+                if self.current_action_id is None:
+                    self.apply_status(session, entry_status, monster, phase)
+                else:
+                    entry_status.use(session, phase)
 
             if removed:
                 exit_status = removed.status.current_status
@@ -724,6 +727,10 @@ class CombatSession:
         if target is not None and hp_change:
             if hp_change < 0 and target.is_fainted:
                 self._faint_causes[target.instance_id] = entry
+                # Party-wide effects and swap hazards can hit off-field
+                # monsters, which never run the battlefield HP check.
+                if target not in self.active_monsters:
+                    self.record_faint(target)
             elif hp_change > 0 and not target.is_fainted:
                 self._faint_causes.pop(target.instance_id, None)
 

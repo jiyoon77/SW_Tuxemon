@@ -141,10 +141,17 @@ def test_cancelled_queue_action_has_no_log(battle):
     [
         pytest.param("mending", id="direct"),
         pytest.param("healing_herb", id="proportional"),
+        pytest.param("solar_synthesis", id="time-of-day"),
     ],
 )
-def test_healing_technique_records_only_actual_recovery(battle, slug):
+def test_healing_technique_records_only_actual_recovery(
+    battle, monkeypatch, slug
+):
     session, combat, user, _ = battle
+    session.client.map_manager.map_inside = False
+    monkeypatch.setattr(
+        session.time, "get_current_time", lambda: datetime(2026, 10, 15, 12)
+    )
     healing_action = (session, combat, user, user)
     hp_before = user.hp - 2
     user.current_hp = hp_before
@@ -223,6 +230,93 @@ def test_status_application_stack_block_and_item_removal(battle):
     )
 
 
+@pytest.mark.parametrize(
+    "slug, expected_user, expected_target",
+    [
+        pytest.param("data_swap", 15, 15, id="average"),
+        pytest.param("kiss", 20, 10, id="swap"),
+    ],
+)
+def test_hp_redistribution_records_damage_and_healing(
+    battle, slug, expected_user, expected_target
+):
+    _, combat, user, target = battle
+    user.current_hp, target.current_hp = 10, 20
+
+    assert use_queued_technique(battle, Technique.create(slug)).success
+
+    assert (user.current_hp, target.current_hp) == (
+        expected_user,
+        expected_target,
+    )
+    *effects, result = combat.battle_log
+    assert len(effects) == 2
+    assert {
+        entry.target_id: (entry.event_type, entry.hp_change)
+        for entry in effects
+    } == {
+        user.instance_id: ("healing", expected_user - 10),
+        target.instance_id: ("damage", expected_target - 20),
+    }
+    assert {entry.actor_id for entry in combat.battle_log} == {
+        user.instance_id
+    }
+    assert {entry.action_id for entry in combat.battle_log} == {
+        result.action_id
+    }
+
+
+def test_leech_status_records_both_monsters_actual_hp_change(battle):
+    _, combat, user, target = battle
+    state = combat_state(battle)
+    status = Status.create("lifeleech", target)
+    status.set_linked_monster(user)
+    target.status.add_status(status)
+    user.current_hp = user.hp - 1
+    user_before, target_before = user.current_hp, target.current_hp
+
+    CombatState._handle_status(state, status, target)
+
+    damage, healing = combat.battle_log
+    assert (damage.event_type, healing.event_type) == (
+        "status_damage",
+        "healing",
+    )
+    assert damage.hp_change == target.current_hp - target_before < 0
+    assert healing.hp_change == user.current_hp - user_before == 1
+    assert (
+        damage.target_id == target.instance_id
+        and healing.target_id == user.instance_id
+    )
+    assert damage.actor_id == healing.actor_id == user.instance_id
+    assert damage.action_id == healing.action_id == 1
+
+
+def test_multiattack_reward_uses_calculated_damage(battle, monkeypatch):
+    _, combat, user, target = battle
+    state = combat_state(battle)
+    target.current_hp = 7
+    monkeypatch.setattr("tuxemon.combat.session.random.random", lambda: 0)
+    monkeypatch.setattr(
+        formula, "simple_damage_calculate", lambda *_: (10, 1.0)
+    )
+    monkeypatch.setattr(
+        "tuxemon.core.effects.multiattack.get_environment_multiplier",
+        lambda *_: 1.0,
+    )
+
+    CombatState._handle_monster_technique(
+        state, user, Technique.create("one_two"), target
+    )
+
+    assert target.current_hp == 0
+    damage, summary = combat.battle_log
+    assert damage.hp_change == -7 and damage.hit_count == 2
+    assert damage.action_id == summary.action_id
+    (reward_damage,) = combat.damage_tracker.get_damages(user, target)
+    assert reward_damage.damage == 20
+
+
 def test_blocked_potion_records_failure_without_healing(battle):
     session, combat, user, _ = battle
     user.status.add_status(Status.create("festering", user))
@@ -271,6 +365,7 @@ def test_technique_follow_up_status_is_recorded_in_same_action(battle):
 def combat_state(battle):
     session, combat, _, _ = battle
     state = MagicMock(session=session, combat_session=combat)
+    state.text_anim.compute_text_anim_time.return_value = 0.0
     state.animate_monster_faint.side_effect = partial(
         CombatState.animate_monster_faint, state
     )
@@ -292,7 +387,11 @@ def test_turn_boundary_damage_and_faint_belong_to_status(battle, slug):
     state = combat_state(battle)
     status = Status.create(slug, target)
     target.status.add_status(status)
-    use_queued_technique(battle, Technique.create("ram"))
+    CombatState._handle_monster_technique(
+        state, user, Technique.create("ram"), target
+    )
+    (reward_damage,) = combat.damage_tracker.get_damages(user, target)
+    assert reward_damage.damage > 0
     attack, summary = combat.battle_log
     assert attack.hp_change < 0 and attack.actor_id == user.instance_id
     assert target.current_hp > 0
@@ -401,8 +500,18 @@ def test_capture_has_one_result_before_animation_callback(
     assert combat.battle_log == ([] if success else [capture, item_result])
 
 
-def test_swap_logs_after_replacement_joins_field(battle):
+@pytest.mark.parametrize(
+    "hazard",
+    [
+        pytest.param(False, id="regular"),
+        pytest.param(True, id="fainted-outgoing"),
+    ],
+)
+def test_swap_logs_after_replacement_joins_field(battle, hazard):
     session, combat, user, _ = battle
+    if hazard:
+        user.current_hp = 1
+        user.status.add_status(Status.create("harpooned", user))
     state = combat_state(battle)
     player = combat.left_player
     user.set_owner(player)
@@ -431,13 +540,27 @@ def test_swap_logs_after_replacement_joins_field(battle):
         incoming in combat.active_monsters
         and user not in combat.active_monsters
     )
-    (swap,) = combat.battle_log
+    swap, *effects = combat.battle_log
     assert swap.event_type == "swap"
     assert (
         swap.actor_id == user.instance_id
         and swap.target_id == incoming.instance_id
     )
     assert swap.action_id == swap.sequence == 1
+    if hazard:
+        damage, faint = effects
+        assert (damage.event_type, faint.event_type) == (
+            "status_damage",
+            "faint",
+        )
+        assert damage.hp_change == -1 and user.current_hp == 0
+        assert damage.status_slug == faint.status_slug == "harpooned"
+        assert damage.target_id == faint.target_id == user.instance_id
+        assert damage.action_id == faint.action_id == swap.action_id
+        CombatState.animate_party_status(state)
+        assert combat.battle_log == [swap, damage, faint]
+    else:
+        assert effects == []
 
 
 def test_forced_replacement_records_trainer_and_incoming_monster(battle):
@@ -550,16 +673,23 @@ def test_flow_records_actual_splash_per_target(
 
 
 @pytest.mark.parametrize(
-    "per_hit",
-    [pytest.param(0, id="zero-damage"), pytest.param(10, id="overkill")],
+    "per_hit, rolls, expected_hits",
+    [
+        pytest.param(0, [0, 0], 2, id="zero-damage"),
+        pytest.param(10, [0, 0], 2, id="overkill"),
+        pytest.param(4, [0, 1], 1, id="second-hit-misses"),
+    ],
 )
 def test_multiattack_records_hit_count_and_actual_total(
-    battle, monkeypatch, per_hit
+    battle, monkeypatch, per_hit, rolls, expected_hits
 ):
     _, combat, user, target = battle
     technique = Technique.create("one_two")
     target.current_hp = 7
-    monkeypatch.setattr("tuxemon.combat.session.random.random", lambda: 0)
+    hit_rolls = iter(rolls)
+    monkeypatch.setattr(
+        "tuxemon.combat.session.random.random", lambda: next(hit_rolls)
+    )
     monkeypatch.setattr(
         formula, "simple_damage_calculate", lambda *_: (per_hit, 1.0)
     )
@@ -570,10 +700,11 @@ def test_multiattack_records_hit_count_and_actual_total(
 
     result = use_queued_technique(battle, technique)
 
-    actual = min(7, per_hit * 2)
-    assert result.success and result.damage == per_hit * 2
+    calculated_damage = per_hit * expected_hits
+    actual = min(7, calculated_damage)
+    assert result.success and result.damage == calculated_damage
     damage, summary = combat.battle_log
-    assert damage.event_type == "damage" and damage.hit_count == 2
+    assert damage.event_type == "damage" and damage.hit_count == expected_hits
     assert damage.hp_change == target.current_hp - 7 == -actual
     assert damage.action_id == summary.action_id == 1
     assert damage.actor_id == user.instance_id

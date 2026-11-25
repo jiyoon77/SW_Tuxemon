@@ -79,7 +79,11 @@ class StepHealingEffect(CoreEffect):
                 params = {"name": monster.name}
                 if monster.hp_ratio < 1.0:
                     heal_amount = min(heal, monster.missing_hp)
+                    hp_before = monster.current_hp
                     monster.current_hp += heal_amount
+                    session.client.combat_session.record_hp_change(
+                        monster, hp_before, actor=user, technique=tech
+                    )
                     done = True
                     extra.append(T.format("combat_state_healed", params))
                 elif monster.hp_ratio == 1.0:

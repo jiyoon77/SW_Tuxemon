@@ -58,7 +58,9 @@ class WildEffect(CoreEffect):
             tech = [skip]
             if not user.is_fainted:
                 damage = user.hp // self.divisor
-                user.current_hp = max(0, user.current_hp - damage)
+                hp_before = user.current_hp
+                user.current_hp = max(0, hp_before - damage)
+                status.record_hp_change(session, user, hp_before)
         return StatusEffectResult(
             name=status.name, success=True, techniques=tech
         )
