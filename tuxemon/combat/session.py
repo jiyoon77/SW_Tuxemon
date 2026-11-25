@@ -824,8 +824,8 @@ class CombatSession:
                     chosen = random.choice(status_result.statuses)
                     user.status.apply_status(session, chosen)
                     get_event_bus().publish("status_applied")
-                    # The combat handler also applied the follow-up, refreshing
-                    # its stack. Keep both applications inside the same action.
+                    # Preserve the combat handler's second roll and application
+                    # to keep existing behavior. Log both under this action.
                     user.status.apply_status(
                         session, random.choice(status_result.statuses)
                     )
