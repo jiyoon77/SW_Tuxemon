@@ -157,6 +157,101 @@ def test_spread_damage_uses_ids_and_actual_hp_loss(battle, monkeypatch):
     assert reward_damage.damage == 21
 
 
+@pytest.mark.parametrize(
+    "roll, expected_damage",
+    [pytest.param(0, 24, id="full-hit"), pytest.param(1, 3, id="partial-hit")],
+)
+def test_flow_records_actual_splash_per_target(
+    battle, monkeypatch, roll, expected_damage
+):
+    _, combat, user, target = battle
+    other = Monster.spawn_base("rockitten", 10)
+    combat.set_battle_format(True)
+    combat.right_player.monsters.append(other)
+    combat.field_monsters.add_monster(combat.right_player, other)
+    technique = Technique.create("flow")
+    technique.target["enemy_monster"] = False
+    technique.target["enemy_team"] = True
+    combat.set_tech_hit(user, roll)
+    target.current_hp = 2
+    other_before = other.current_hp
+    monkeypatch.setattr(
+        formula, "simple_damage_calculate", lambda *_: (32, 1.0)
+    )
+    monkeypatch.setattr(
+        "tuxemon.core.effects.splash.get_environment_multiplier",
+        lambda *_: 1.0,
+    )
+
+    result = use_queued_technique(battle, technique)
+
+    assert result.success and result.damage == expected_damage
+    assert ("combat_splash_partial" in result.extras) == bool(roll)
+    *damage, summary = combat.battle_log
+    assert len(damage) == 2
+    assert {entry.target_id: entry.hp_change for entry in damage} == {
+        target.instance_id: target.current_hp - 2,
+        other.instance_id: other.current_hp - other_before,
+    }
+    assert target.current_hp == 0
+    assert other.current_hp == other_before - expected_damage
+    assert summary.event_type == "technique_result"
+    assert {entry.action_id for entry in combat.battle_log} == {1}
+    (reward_damage,) = combat.damage_tracker.get_damages(user, other)
+    assert reward_damage.damage == expected_damage
+
+
+@pytest.mark.parametrize(
+    "per_hit",
+    [pytest.param(0, id="zero-damage"), pytest.param(10, id="overkill")],
+)
+def test_multiattack_records_hit_count_and_actual_total(
+    battle, monkeypatch, per_hit
+):
+    _, combat, user, target = battle
+    technique = Technique.create("one_two")
+    target.current_hp = 7
+    monkeypatch.setattr("tuxemon.combat.session.random.random", lambda: 0)
+    monkeypatch.setattr(
+        formula, "simple_damage_calculate", lambda *_: (per_hit, 1.0)
+    )
+    monkeypatch.setattr(
+        "tuxemon.core.effects.multiattack.get_environment_multiplier",
+        lambda *_: 1.0,
+    )
+
+    result = use_queued_technique(battle, technique)
+
+    actual = min(7, per_hit * 2)
+    assert result.success and result.damage == per_hit * 2
+    damage, summary = combat.battle_log
+    assert damage.event_type == "damage" and damage.hit_count == 2
+    assert damage.hp_change == target.current_hp - 7 == -actual
+    assert damage.action_id == summary.action_id == 1
+    assert damage.actor_id == user.instance_id
+    assert damage.target_id == summary.target_id == target.instance_id
+    assert damage.sequence < summary.sequence
+
+
+def test_tooth_for_tooth_records_self_and_enemy_damage(battle):
+    _, combat, user, target = battle
+    user.current_hp, target.current_hp = 5, 7
+
+    result = use_queued_technique(battle, Technique.create("tooth_for_tooth"))
+
+    assert result.success
+    recoil, enemy_damage, summary = combat.battle_log
+    assert recoil.event_type == enemy_damage.event_type == "damage"
+    assert recoil.actor_id == recoil.target_id == user.instance_id
+    assert enemy_damage.actor_id == user.instance_id
+    assert enemy_damage.target_id == target.instance_id
+    assert recoil.hp_change == user.current_hp - 5 == -5
+    assert enemy_damage.hp_change == target.current_hp - 7 == -7
+    assert recoil.action_id == enemy_damage.action_id == summary.action_id == 1
+    (reward_damage,) = combat.damage_tracker.get_damages(user, user)
+    assert reward_damage.damage == target.hp // 2
+
+
 def test_zero_hp_change_has_no_damage_event(battle, monkeypatch):
     _, combat, _, _ = battle
     monkeypatch.setattr(

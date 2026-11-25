@@ -631,6 +631,8 @@ class CombatSession:
         technique: Technique,
         outcome: Literal["success", "failure"],
         hp_change: int | None = None,
+        *,
+        hit_count: int | None = None,
     ) -> None:
         action_id = self.current_action_id
         if action_id is None:
@@ -650,8 +652,30 @@ class CombatSession:
                 technique_name=technique.name,
                 outcome=outcome,
                 hp_change=hp_change,
+                hit_count=hit_count,
             )
         )
+
+    def record_technique_damage(
+        self,
+        user: Monster,
+        target: Monster,
+        tech: Technique,
+        hp_before: int,
+        *,
+        hit_count: int | None = None,
+    ) -> None:
+        hp_change = target.current_hp - hp_before
+        if hp_change < 0 or hit_count is not None:
+            self.record_battle_event(
+                "damage",
+                user,
+                target,
+                tech,
+                "success",
+                hp_change,
+                hit_count=hit_count,
+            )
 
     def apply_technique(
         self, session: Session, tech: Technique, user: Monster, target: Monster

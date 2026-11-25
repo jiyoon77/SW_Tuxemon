@@ -76,11 +76,7 @@ class DamageEffect(CoreEffect):
                 dmg = max(1, dmg)
             hp_before = monster.current_hp
             monster.current_hp = max(0, hp_before - dmg)
-            hp_change = monster.current_hp - hp_before
-            if hp_change < 0:
-                combat.record_battle_event(
-                    "damage", user, monster, tech, "success", hp_change
-                )
+            combat.record_technique_damage(user, monster, tech, hp_before)
             if monster == target:
                 damage, mult = dmg, m
             else:

@@ -55,24 +55,23 @@ class PropDamageEffect(CoreEffect):
         monsters: list[Monster] = []
 
         objectives = self.objectives.split(":")
-        hit = session.client.combat_session.get_tech_hit(user)
+        combat = session.client.combat_session
+        hit = combat.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
         reference_hp = target.hp
 
         if tech.hit:
-            monsters = session.client.combat_session.get_target_monsters(
-                objectives, user, target
-            )
+            monsters = combat.get_target_monsters(objectives, user, target)
 
         if monsters:
             damage = int(float(reference_hp) * self.proportional)
             for monster in monsters:
-                monster.current_hp = max(0, monster.current_hp - damage)
+                hp_before = monster.current_hp
+                monster.current_hp = max(0, hp_before - damage)
+                combat.record_technique_damage(user, monster, tech, hp_before)
                 # to avoid double registration in the self._damage_map
                 if monster != target:
-                    session.client.combat_session.enqueue_damage(
-                        user, monster, damage
-                    )
+                    combat.enqueue_damage(user, monster, damage)
 
         return TechEffectResult(
             name=tech.name,

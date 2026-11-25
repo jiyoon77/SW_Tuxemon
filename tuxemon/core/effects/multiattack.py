@@ -71,7 +71,11 @@ class MultiAttackEffect(CoreEffect):
         success = hit_count > 0
 
         if success:
-            target.current_hp = max(0, target.current_hp - total_damage)
+            hp_before = target.current_hp
+            target.current_hp = max(0, hp_before - total_damage)
+            combat.record_technique_damage(
+                user, target, tech, hp_before, hit_count=hit_count
+            )
             params = {"hit_count": hit_count}
             extract_text = T.format("combat_multiattack", params)
             extras = [extract_text]

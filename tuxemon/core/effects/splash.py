@@ -48,20 +48,21 @@ class SplashEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        hit = session.client.combat_session.get_tech_hit(user)
+        combat = session.client.combat_session
+        hit = combat.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
         base, mult = formula.simple_damage_calculate(tech, user, target)
         env_mult = get_environment_multiplier(session, user)
         damage = apply_environment_bonus(base, env_mult)
-        targets = session.client.combat_session.get_targets(tech, user, target)
+        targets = combat.get_targets(tech, user, target)
 
         partial_hit = False
         if not tech.hit:
             damage //= self.divisor
             partial_hit = True
 
-        enemy_side = session.client.combat_session.get_own_monsters(target)
+        enemy_side = combat.get_own_monsters(target)
         if sum(1 for m in targets if m in enemy_side) > 1:
             damage = int(damage * 0.75)
 
@@ -71,12 +72,12 @@ class SplashEffect(CoreEffect):
 
         if targets:
             for monster in targets:
-                monster.current_hp = max(0, monster.current_hp - damage)
+                hp_before = monster.current_hp
+                monster.current_hp = max(0, hp_before - damage)
+                combat.record_technique_damage(user, monster, tech, hp_before)
                 # to avoid double registration in the self._damage_map
                 if monster != target:
-                    session.client.combat_session.enqueue_damage(
-                        user, monster, damage
-                    )
+                    combat.enqueue_damage(user, monster, damage)
 
         extras = ["combat_splash_partial"] if partial_hit and damage else []
         message = environment_message(env_mult)

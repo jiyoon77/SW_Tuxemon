@@ -19,3 +19,4 @@ class BattleLogEntry:
     technique_name: str
     outcome: Literal["success", "failure"]
     hp_change: int | None = None
+    hit_count: int | None = None
