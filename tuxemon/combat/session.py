@@ -4,11 +4,18 @@ from __future__ import annotations
 
 import logging
 import random
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
+from contextlib import contextmanager, nullcontext
+from dataclasses import replace
 from typing import TYPE_CHECKING, Any, Literal
+from uuid import UUID
 
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
-from tuxemon.combat.battle_log import BattleLogEntry
+from tuxemon.combat.battle_log import (
+    BattleEventType,
+    BattleLogEntry,
+    StatusEventType,
+)
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.damage_tracker import DamageTracker
 from tuxemon.combat.field_monsters import FieldMonsters
@@ -19,9 +26,11 @@ from tuxemon.combat.reward_system import (
     WildRewardCalculator,
 )
 from tuxemon.combat.utils import battlefield
-from tuxemon.db import EffectPhase, TargetType
+from tuxemon.db import EffectPhase, ItemCategory, TargetType
 from tuxemon.event import get_event_bus
+from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
+from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 from tuxemon.ui.combat_swap import SwapTracker
 
@@ -32,10 +41,8 @@ if TYPE_CHECKING:
         TechEffectResult,
     )
     from tuxemon.entity.npc import NPC
-    from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
-    from tuxemon.status.status import Status
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +66,9 @@ class CombatSession:
         self.battle_log: list[BattleLogEntry] = []
         self.current_action_id: int | None = None
         self._action_count = 0
+        self._action_actor: NPC | Monster | None = None
+        self._action_source: Technique | Item | Status | None = None
+        self._faint_causes: dict[UUID, BattleLogEntry] = {}
 
     # Players management
     @property
@@ -500,10 +510,16 @@ class CombatSession:
             for monster in monsters:
                 held_item = monster.held_item
                 if held_item:
-                    held_item.use(session, player, monster)
+                    if held_item.effect_defs:
+                        with self._battle_action(monster, held_item):
+                            self._use_item(session, held_item, player, monster)
+                    else:
+                        held_item.use(session, player, monster)
                 status = monster.status.current_status
                 if status:
-                    status.use(session, EffectPhase.ON_DECISION)
+                    self.apply_status(
+                        session, status, monster, EffectPhase.ON_DECISION
+                    )
 
     def apply_statuses(self, session: Session) -> None:
         """
@@ -569,21 +585,31 @@ class CombatSession:
         monster: Monster,
         removed: Monster | None = None,
     ) -> None:
-        self.field_monsters.add_monster(player, monster)
+        is_replacement = removed is None and self.turn > 1
+        action = (
+            self._battle_action(removed or player)
+            if removed or is_replacement
+            else nullcontext()
+        )
+        with action:
+            self.field_monsters.add_monster(player, monster)
+            if removed:
+                self.record_battle_event("swap", monster)
+            elif is_replacement:
+                self.record_battle_event("replacement", monster)
 
-        for mon in self.active_monsters:
-            mon.status.remove_bonded_statuses(session)
+            for mon in self.active_monsters:
+                mon.status.remove_bonded_statuses(session)
 
-        phase = EffectPhase.SWAP_MONSTER
+            phase = EffectPhase.SWAP_MONSTER
+            entry_status = monster.status.current_status
+            if entry_status:
+                entry_status.use(session, phase)
 
-        entry_status = monster.status.current_status
-        if entry_status:
-            entry_status.use(session, phase)
-
-        if removed:
-            exit_status = removed.status.current_status
-            if exit_status:
-                exit_status.use(session, phase)
+            if removed:
+                exit_status = removed.status.current_status
+                if exit_status:
+                    exit_status.use(session, phase)
 
         self.event_bus.publish(
             "monster_added", player=player, monster=monster, removed=removed
@@ -603,7 +629,9 @@ class CombatSession:
         logger.debug(f"[PreCheck Start] {monster.name} using {technique.slug}")
         status = monster.status.current_status
         if status:
-            result_status = status.use(session, EffectPhase.PRE_CHECKING)
+            result_status = self.apply_status(
+                session, status, monster, EffectPhase.PRE_CHECKING
+            )
             if result_status.techniques:
                 technique = random.choice(result_status.techniques)
 
@@ -623,95 +651,183 @@ class CombatSession:
         logger.debug(f"[PreCheck End] {monster.name} using {technique.slug}")
         return technique
 
+    @contextmanager
+    def _battle_action(
+        self,
+        actor: NPC | Monster | None,
+        source: Technique | Item | Status | None = None,
+    ) -> Iterator[None]:
+        previous = (
+            self.current_action_id,
+            self._action_actor,
+            self._action_source,
+        )
+        self._action_count += 1
+        self.current_action_id = self._action_count
+        self._action_actor, self._action_source = actor, source
+        try:
+            yield
+        finally:
+            self.current_action_id, self._action_actor, self._action_source = (
+                previous
+            )
+
     def record_battle_event(
         self,
-        event_type: Literal["technique_result", "damage"],
-        actor: Monster,
-        target: Monster,
-        technique: Technique,
-        outcome: Literal["success", "failure"],
-        hp_change: int | None = None,
+        event_type: BattleEventType,
+        target: Monster | None,
         *,
+        outcome: Literal["success", "failure"] = "success",
+        actor: NPC | Monster | None = None,
+        technique: Technique | None = None,
+        status: Status | None = None,
+        hp_change: int | None = None,
         hit_count: int | None = None,
+        blocked_by: str | None = None,
+        blocked_reason: str | None = None,
+        num_shakes: int | None = None,
     ) -> None:
         action_id = self.current_action_id
         if action_id is None:
             return
 
-        self.battle_log.append(
-            BattleLogEntry(
-                turn=self.turn,
-                action_id=action_id,
-                sequence=len(self.battle_log) + 1,
-                event_type=event_type,
-                actor_id=actor.instance_id,
-                actor_name=actor.name,
-                target_id=target.instance_id,
-                target_name=target.name,
-                technique_slug=technique.slug,
-                technique_name=technique.name,
-                outcome=outcome,
-                hp_change=hp_change,
-                hit_count=hit_count,
-            )
+        actor = actor if actor is not None else self._action_actor
+        source = self._action_source
+        if isinstance(source, Technique) and technique is None:
+            technique = source
+        if isinstance(source, Status) and status is None:
+            status = source
+        item = source if isinstance(source, Item) else None
+        entry = BattleLogEntry(
+            turn=self.turn,
+            action_id=action_id,
+            sequence=len(self.battle_log) + 1,
+            event_type=event_type,
+            actor_id=actor.instance_id if actor is not None else None,
+            actor_name=actor.name if actor is not None else None,
+            target_id=target.instance_id if target is not None else None,
+            target_name=target.name if target is not None else None,
+            technique_slug=technique.slug if technique is not None else None,
+            technique_name=technique.name if technique is not None else None,
+            item_slug=item.slug if item is not None else None,
+            item_name=item.name if item is not None else None,
+            status_slug=status.slug if status is not None else None,
+            status_name=status.name if status is not None else None,
+            outcome=outcome,
+            hp_change=hp_change,
+            hit_count=hit_count,
+            blocked_by=blocked_by,
+            blocked_reason=blocked_reason,
+            num_shakes=num_shakes,
         )
+        self.battle_log.append(entry)
+        if target is not None and hp_change:
+            if hp_change < 0 and target.is_fainted:
+                self._faint_causes[target.instance_id] = entry
+            elif hp_change > 0 and not target.is_fainted:
+                self._faint_causes.pop(target.instance_id, None)
 
-    def record_technique_damage(
+    def record_hp_change(
         self,
-        user: Monster,
         target: Monster,
-        tech: Technique,
         hp_before: int,
         *,
+        actor: Monster | None = None,
+        technique: Technique | None = None,
+        status: Status | None = None,
         hit_count: int | None = None,
     ) -> None:
         hp_change = target.current_hp - hp_before
-        if hp_change < 0 or hit_count is not None:
+        if not hp_change and hit_count is None:
+            return
+        event_type: BattleEventType = "damage"
+        if hp_change > 0:
+            event_type = "healing"
+        elif status is not None:
+            event_type = "status_damage"
+        self.record_battle_event(
+            event_type,
+            target,
+            actor=actor,
+            technique=technique,
+            status=status,
+            hp_change=hp_change,
+            hit_count=hit_count,
+        )
+
+    def record_status_change(
+        self,
+        event_type: StatusEventType,
+        status: Status,
+        *,
+        blocked_by: str | None = None,
+        blocked_reason: str | None = None,
+    ) -> None:
+        if status.slug != "faint":
             self.record_battle_event(
-                "damage",
-                user,
-                target,
-                tech,
-                "success",
-                hp_change,
-                hit_count=hit_count,
+                event_type,
+                status.host,
+                outcome="failure"
+                if event_type == "status_blocked"
+                else "success",
+                status=status,
+                blocked_by=blocked_by,
+                blocked_reason=blocked_reason,
+            )
+
+    def record_faint(self, monster: Monster) -> None:
+        # The HP check may run a survival effect before fainting is confirmed.
+        cause = self._faint_causes.pop(monster.instance_id, None)
+        if cause is None:
+            with self._battle_action(None):
+                self.record_battle_event("faint", monster)
+        else:
+            self.battle_log.append(
+                replace(
+                    cause,
+                    turn=self.turn,
+                    sequence=len(self.battle_log) + 1,
+                    event_type="faint",
+                    hp_change=None,
+                    hit_count=None,
+                )
             )
 
     def apply_technique(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> tuple[TechEffectResult, StatusEffectResult | None]:
         pre_status = user.status.current_status
-        if tech.slug not in {"swap", "menu_run", "menu_forfeit"}:
-            self._action_count += 1
-            self.current_action_id = self._action_count
-        try:
+        action = (
+            nullcontext()
+            if tech.slug in {"swap", "menu_run", "menu_forfeit"}
+            else self._battle_action(user, tech)
+        )
+        with action:
             result = tech.use(session, user, target)
+            logger.debug(
+                f"{user.name} used {tech.slug} on {target.name} > success={result.success}"
+            )
+
+            status_result = None
+            status = user.status.current_status
+            # Only run PERFORM_TECH for a status the user had before the move.
+            if status and status is pre_status:
+                status_result = status.use(session, EffectPhase.PERFORM_TECH)
+                if status_result.statuses:
+                    chosen = random.choice(status_result.statuses)
+                    user.status.apply_status(session, chosen)
+                    get_event_bus().publish("status_applied")
+                    # The combat handler also applied the follow-up, refreshing
+                    # its stack. Keep both applications inside the same action.
+                    user.status.apply_status(
+                        session, random.choice(status_result.statuses)
+                    )
+
             self.record_battle_event(
                 "technique_result",
-                user,
                 target,
-                tech,
-                "success" if result.success else "failure",
+                outcome="success" if result.success else "failure",
             )
-        finally:
-            self.current_action_id = None
-        logger.debug(
-            f"{user.name} used {tech.slug} on {target.name} > success={result.success}"
-        )
-
-        status_result = None
-        status = user.status.current_status
-        # Only run the PERFORM_TECH phase on a status the user already had
-        # before this technique executed. Otherwise a technique that grants a
-        # status to its own user (e.g. Life Surge granting "chargedup") would
-        # have that status consumed by this same action's PERFORM_TECH hook.
-        if status and status is pre_status:
-            status_result = status.use(session, EffectPhase.PERFORM_TECH)
-            if status_result.statuses:
-                chosen = random.choice(status_result.statuses)
-                user.status.apply_status(session, chosen)
-                get_event_bus().publish("status_applied")
-
         return result, status_result
 
     def apply_item(
@@ -721,15 +837,32 @@ class CombatSession:
         user: NPC,
         target: Monster | None,
     ) -> ItemEffectResult:
+        with self._battle_action(user, item):
+            result = self._use_item(session, item, user, target)
+            if target:
+                status = target.status.current_status
+                if result.success and status:
+                    status.use(session, EffectPhase.PERFORM_ITEM)
+        return result
+
+    def _use_item(
+        self, session: Session, item: Item, user: NPC, target: Monster | None
+    ) -> ItemEffectResult:
         result = item.use(session, user, target)
+        outcome: Literal["success", "failure"] = (
+            "success" if result.success else "failure"
+        )
+        if target is not None and item.category == ItemCategory.CAPTURE:
+            self.record_battle_event(
+                "capture_result",
+                target,
+                outcome=outcome,
+                num_shakes=result.num_shakes,
+            )
+        self.record_battle_event("item_result", target, outcome=outcome)
         logger.debug(
             f"{user.name} used {item.slug} on {target.name if target else 'None'} > success={result.success}"
         )
-
-        if target:
-            status = target.status.current_status
-            if result.success and status:
-                status.use(session, EffectPhase.PERFORM_ITEM)
         return result
 
     def apply_status(
@@ -739,7 +872,8 @@ class CombatSession:
         target: Monster,
         phase: EffectPhase,
     ) -> StatusEffectResult:
-        result = status.use(session, phase)
+        with self._battle_action(None, status):
+            result = status.use(session, phase)
         logger.debug(
             f"{status.slug} applied to {target.name} during {phase.name}"
         )
@@ -760,6 +894,9 @@ class CombatSession:
         self.battle_log.clear()
         self.current_action_id = None
         self._action_count = 0
+        self._action_actor = None
+        self._action_source = None
+        self._faint_causes.clear()
         self.action_queue.clear_queue()
         self.action_queue.clear_history()
         self.action_queue.clear_pending()

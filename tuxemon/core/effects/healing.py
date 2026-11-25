@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class HealingEffect(CoreEffect):
     """
@@ -84,13 +85,16 @@ class HealingEffect(CoreEffect):
                 params = {"name": monster.name}
                 if monster.hp_ratio < 1.0:
                     heal_amount = min(heal, monster.missing_hp)
+                    hp_before = monster.current_hp
                     monster.current_hp += heal_amount
+                    session.client.combat_session.record_hp_change(
+                        monster, hp_before, actor=user, technique=tech
+                    )
                     done = True
                     extra.append(T.format("combat_state_healed", params))
                 elif monster.hp_ratio == 1.0:
                     extra.append(T.format("combat_full_health", params))
         return TechEffectResult(name=tech.name, success=done, extras=extra)
-
 
     def _resolve_targets(
         self, session: Session, tech: Technique, user: Monster, target: Monster

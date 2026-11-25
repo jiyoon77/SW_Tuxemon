@@ -50,7 +50,10 @@ class RecoverEffect(CoreEffect):
         host = status.host
         if status.has_phase(EffectPhase.PERFORM_STATUS):
             heal = simple_recover(host, self.divisor)
-            host.current_hp = min(host.hp, host.current_hp + heal)
+            hp_before = host.current_hp
+            host.current_hp = min(host.hp, hp_before + heal)
+            if (combat := session.combat_session) is not None:
+                combat.record_hp_change(host, hp_before, status=status)
             healing = bool(heal)
         # check for recover (completely healed)
         if (

@@ -67,8 +67,10 @@ class PropHealingEffect(CoreEffect):
         if monsters:
             amount = int((reference_hp) * self.proportional)
             for monster in monsters:
-                monster.current_hp = min(
-                    monster.hp, monster.current_hp + amount
+                hp_before = monster.current_hp
+                monster.current_hp = min(monster.hp, hp_before + amount)
+                session.client.combat_session.record_hp_change(
+                    monster, hp_before, actor=user, technique=tech
                 )
 
         return TechEffectResult(name=tech.name, success=tech.hit)

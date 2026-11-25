@@ -68,7 +68,9 @@ class PropDamageEffect(CoreEffect):
             for monster in monsters:
                 hp_before = monster.current_hp
                 monster.current_hp = max(0, hp_before - damage)
-                combat.record_technique_damage(user, monster, tech, hp_before)
+                combat.record_hp_change(
+                    monster, hp_before, actor=user, technique=tech
+                )
                 # to avoid double registration in the self._damage_map
                 if monster != target:
                     combat.enqueue_damage(user, monster, damage)

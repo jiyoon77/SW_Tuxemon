@@ -50,7 +50,10 @@ class DieHardEffect(CoreEffect):
                 host.status.clear_status(session)
                 extra = [T.format("combat_state_diehard_end", params)]
             if host.is_fainted:
+                hp_before = host.current_hp
                 host.current_hp = self.hp
+                if (combat := session.combat_session) is not None:
+                    combat.record_hp_change(host, hp_before, status=status)
                 host.status.clear_status(session)
                 extra = [T.format("combat_state_diehard_tech", params)]
         return StatusEffectResult(name=status.name, success=True, extras=extra)

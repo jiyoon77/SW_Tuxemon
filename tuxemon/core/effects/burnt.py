@@ -54,7 +54,10 @@ class BurntEffect(CoreEffect):
             damage *= mult
             if damage > 0:
                 burnt = True
-                host.current_hp = max(0, host.current_hp - int(damage))
+                hp_before = host.current_hp
+                host.current_hp = max(0, hp_before - int(damage))
+                if (combat := session.combat_session) is not None:
+                    combat.record_hp_change(host, hp_before, status=status)
             else:
                 status.use_failure = T.format("combat_state_immune", params)
                 host.status.clear_status(session)
