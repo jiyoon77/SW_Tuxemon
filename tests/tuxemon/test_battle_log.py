@@ -767,7 +767,9 @@ def test_previous_turn_log_matches_hp_loss_for_each_target(battle):
                 actor_id=user.instance_id,
                 target_id=monster.instance_id,
             )
-            (damage,) = (entry for entry in entries if entry.event_type == "damage")
+            (damage,) = (
+                entry for entry in entries if entry.event_type == "damage"
+            )
             assert damage.target_id == monster.instance_id
             assert damage.hp_change == after - before < 0
 
@@ -775,12 +777,48 @@ def test_previous_turn_log_matches_hp_loss_for_each_target(battle):
     assert combat.get_battle_log(start_turn=1, end_turn=2) == log
     assert [entry.turn for entry in log] == [1, 1, 1, 2, 2]
     assert combat.get_battle_log(actor_id=other_target.instance_id) == log[-2:]
-    assert combat.get_battle_log(start_turn=2, target_id=target.instance_id) == ()
+    assert (
+        combat.get_battle_log(start_turn=2, target_id=target.instance_id) == ()
+    )
     assert combat.get_battle_log(end_turn=0) == ()
     assert [monster.current_hp for monster in (user, *targets)] == hp_at_query
     assert combat.turn == turn
     assert combat.action_queue.queue == queued_actions
     assert tuple(combat.battle_log) == log
+
+
+def test_previous_turn_log_reads_flow_damage_by_target_id(battle):
+    _, combat, user, target = battle
+    other = Monster.spawn_base("rockitten", 10)
+    assert target.name == other.name
+    assert target.instance_id != other.instance_id
+    combat.set_battle_format(True)
+    combat.right_player.monsters.append(other)
+    combat.field_monsters.add_monster(combat.right_player, other)
+
+    target.current_hp = 1
+    targets = (target, other)
+    hp_before = [monster.current_hp for monster in targets]
+    flow = Technique.create("flow")
+    flow.target["enemy_monster"] = False
+    flow.target["enemy_team"] = True
+    assert use_queued_technique(battle, flow).success
+    hp_after = [monster.current_hp for monster in targets]
+
+    combat.next_turn()
+    previous_turn = combat.turn - 1
+    for monster, before, after in zip(targets, hp_before, hp_after):
+        entries = combat.get_battle_log(
+            start_turn=previous_turn,
+            end_turn=previous_turn,
+            actor_id=user.instance_id,
+            target_id=monster.instance_id,
+        )
+        (damage,) = (
+            entry for entry in entries if entry.event_type == "damage"
+        )
+        assert damage.technique_slug == "flow"
+        assert damage.hp_change == after - before < 0
 
 
 def test_zero_hp_change_has_no_damage_event(battle, monkeypatch):
