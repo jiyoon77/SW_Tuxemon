@@ -21,6 +21,7 @@ from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
+    from tuxemon.combat.session import CombatSession
     from tuxemon.db import BoundingBox
     from tuxemon.entity.npc import NPC
     from tuxemon.save_system.save_state import SaveData
@@ -132,6 +133,12 @@ class Session(AbstractSession["BaseClient"]):
     Contains Client, World, and Player.
     This is the concrete local session implementation.
     """
+
+    @property
+    def combat_session(self) -> CombatSession | None:
+        return (
+            self._client.combat_session if self._client is not None else None
+        )
 
     @property
     def client(self) -> BaseClient:

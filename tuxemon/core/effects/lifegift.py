@@ -59,10 +59,18 @@ class LifeGiftEffect(CoreEffect):
             logger.debug(
                 f"[LifeGift] {linked.name} gifted {damage} HP to {host.name}"
             )
-            linked.current_hp = max(0, linked.current_hp - damage)
-            host.current_hp = min(host.hp, host.current_hp + damage)
+            hp_before = linked.current_hp
+            linked.current_hp = max(0, hp_before - damage)
+            status.record_hp_change(session, linked, hp_before, actor=linked)
+            hp_before = host.current_hp
+            host.current_hp = min(host.hp, hp_before + damage)
+            status.record_hp_change(session, host, hp_before, actor=linked)
             lifegift = True
-        if linked and linked.is_fainted and status.has_phase(EffectPhase.PERFORM_STATUS):
+        if (
+            linked
+            and linked.is_fainted
+            and status.has_phase(EffectPhase.PERFORM_STATUS)
+        ):
             host.status.clear_status(session)
 
         return StatusEffectResult(name=status.name, success=lifegift)

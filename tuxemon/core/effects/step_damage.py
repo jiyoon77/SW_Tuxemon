@@ -74,7 +74,11 @@ class StepDamageEffect(CoreEffect):
             damage, _ = simple_damage_calculate(tech, user, target)
 
             for monster in monsters:
-                monster.current_hp = max(0, monster.current_hp - damage)
+                hp_before = monster.current_hp
+                monster.current_hp = max(0, hp_before - damage)
+                session.client.combat_session.record_hp_change(
+                    monster, hp_before, actor=user, technique=tech
+                )
                 # to avoid double registration in the self._damage_map
                 if monster != target:
                     session.client.combat_session.enqueue_damage(

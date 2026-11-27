@@ -60,12 +60,20 @@ class LifeShareEffect(CoreEffect):
                 else (target, user)
             )
             if not source.is_fainted and not dest.is_fainted:
+                source_hp, dest_hp = source.current_hp, dest.current_hp
                 if self.method == "weighted":
                     weighted_average(source, dest)
                 elif self.method == "geometric":
                     geometric_mean(source, dest)
                 else:
                     simple_average(source, dest)
+                combat = session.client.combat_session
+                combat.record_hp_change(
+                    source, source_hp, actor=user, technique=tech
+                )
+                combat.record_hp_change(
+                    dest, dest_hp, actor=user, technique=tech
+                )
                 done = True
         return TechEffectResult(name=tech.name, success=done)
 

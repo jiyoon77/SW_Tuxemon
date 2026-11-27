@@ -14,6 +14,7 @@ from tuxemon.status.status import Status, decode_status, encode_status
 from tuxemon.status.transition_engine import TransitionEngine
 
 if TYPE_CHECKING:
+    from tuxemon.combat.battle_log import StatusEventType
     from tuxemon.core.core_effect import StatusEffectResult
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
@@ -46,6 +47,23 @@ class MonsterStatusHandler:
             return None
         return self.status[0]
 
+    @staticmethod
+    def _record_change(
+        session: Session,
+        event_type: StatusEventType,
+        status: Status,
+        *,
+        blocked_by: str | None = None,
+        reason: BlockedReason | None = None,
+    ) -> None:
+        if (combat := session.combat_session) is not None:
+            combat.record_status_change(
+                event_type,
+                status,
+                blocked_by=blocked_by,
+                blocked_reason=reason.value if reason is not None else None,
+            )
+
     def apply_status(
         self,
         session: Session,
@@ -61,6 +79,13 @@ class MonsterStatusHandler:
 
         immunity = self.immunity_engine.check(host, new_status)
         if immunity.immune:
+            self._record_change(
+                session,
+                "status_blocked",
+                new_status,
+                blocked_by=immunity.blocked_by,
+                reason=immunity.reason,
+            )
             return StatusApplyResult(
                 applied=False,
                 blocked_by=immunity.blocked_by,
@@ -74,6 +99,7 @@ class MonsterStatusHandler:
         if result.outcome == ResponseStatus.STACKED:
             if current_status:
                 current_status.stack()
+                self._record_change(session, "status_stacked", current_status)
                 return StatusApplyResult(
                     applied=False,
                     blocked_by=current_status.name,
@@ -84,7 +110,7 @@ class MonsterStatusHandler:
             if current_status:
                 current_status.use(session, EffectPhase.ON_END)
 
-            self.add_status(new_status)
+            self.add_status(new_status, session=session)
             new_status.tick_turn()
             new_status.use(session, EffectPhase.ON_START)
 
@@ -101,16 +127,31 @@ class MonsterStatusHandler:
         # BLOCKED (and any unrecognised outcome): the current status is
         # sticky, so it stays put and the new status never lands.
 
+        blocked_by = current_status.name if current_status else None
+        self._record_change(
+            session,
+            "status_blocked",
+            new_status,
+            blocked_by=blocked_by,
+            reason=result.reason,
+        )
         return StatusApplyResult(
             applied=False,
-            blocked_by=current_status.name if current_status else None,
+            blocked_by=blocked_by,
             blocked_reason=result.reason,
         )
 
-    def add_status(self, status: Status) -> None:
+    def add_status(
+        self, status: Status, *, session: Session | None = None
+    ) -> None:
         if self.has_status(status.slug):
             return
+        previous = self.status
         self.status = [status]
+        if session is not None:
+            for removed in previous:
+                self._record_change(session, "status_removed", removed)
+            self._record_change(session, "status_applied", status)
 
     def clear_status(self, session: Session) -> None:
         """Clears the current status effect for monsters in combat."""
@@ -119,6 +160,7 @@ class MonsterStatusHandler:
             return
 
         self.status.clear()
+        self._record_change(session, "status_removed", current_status)
         current_status.use(session, EffectPhase.ON_END)
 
     def apply_faint(self, session: Session, monster: Monster) -> None:
@@ -140,7 +182,10 @@ class MonsterStatusHandler:
         for sta in to_remove:
             sta.use(session, EffectPhase.ON_END)
 
+        remaining = [sta for sta in to_remove if sta in self.status]
         self.status = [sta for sta in self.status if not sta.bond]
+        for sta in remaining:
+            self._record_change(session, "status_removed", sta)
 
     def check_and_clear_use_expiry(
         self, session: Session, max_uses: int = 1

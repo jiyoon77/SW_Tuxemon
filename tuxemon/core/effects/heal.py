@@ -66,7 +66,10 @@ class HealEffect(CoreEffect):
             raise ValueError(
                 f"Invalid heal type '{self.heal_type}'. Must be either 'fixed' or 'percentage'."
             )
+        hp_before = target.current_hp
         set_health(target, value, adjust=True)
+        if (combat := session.combat_session) is not None:
+            combat.record_hp_change(target, hp_before)
         if target.is_fainted:
             target.status.apply_faint(session, target)
 

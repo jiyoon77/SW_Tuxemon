@@ -50,6 +50,8 @@ class WastingEffect(CoreEffect):
             and not host.is_fainted
         ):
             damage = (host.hp // self.divisor) * status.nr_turn
-            host.current_hp = max(0, host.current_hp - damage)
+            hp_before = host.current_hp
+            host.current_hp = max(0, hp_before - damage)
+            status.record_hp_change(session, host, hp_before)
             done = True
         return StatusEffectResult(name=status.name, success=done)

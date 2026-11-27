@@ -35,7 +35,6 @@ able to.
 from __future__ import annotations
 
 import logging
-import random
 from collections import deque
 from collections.abc import Sequence
 from functools import partial
@@ -682,9 +681,6 @@ class CombatState(CombatAnimations):
                 ]
                 template = "\n".join(templates)
                 message += "\n" + template
-            if status_result.statuses:
-                status = random.choice(status_result.statuses)
-                user.status.apply_status(self.session, status)
 
         if result_tech.success and method.use_success:
             template = method.use_success
@@ -750,7 +746,6 @@ class CombatState(CombatAnimations):
                 )
                 if m:
                     message += "\n" + m
-
 
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time
@@ -1012,6 +1007,7 @@ class CombatState(CombatAnimations):
                         partial(self.dialog.alert, msg, self.text_area),
                         config_combat.action_time,
                     )
+                    self.combat_session.record_faint(monster)
                     self.animate_monster_faint(monster)
 
     def check_party_hp(self) -> None:
@@ -1048,8 +1044,8 @@ class CombatState(CombatAnimations):
         """
         status = monster.status.current_status
         if status:
-            result_status = status.use(
-                self.session, EffectPhase.CHECK_PARTY_HP
+            result_status = self.combat_session.apply_status(
+                self.session, status, monster, EffectPhase.CHECK_PARTY_HP
             )
             if result_status.extras:
                 templates = [

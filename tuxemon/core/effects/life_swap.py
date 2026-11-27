@@ -43,5 +43,12 @@ class LifeSwapEffect(CoreEffect):
                 hp_user, hp_target = user.current_hp, target.current_hp
                 user.current_hp = min(user.hp, hp_target)
                 target.current_hp = min(target.hp, hp_user)
+                combat = session.client.combat_session
+                combat.record_hp_change(
+                    user, hp_user, actor=user, technique=tech
+                )
+                combat.record_hp_change(
+                    target, hp_target, actor=user, technique=tech
+                )
                 done = True
         return TechEffectResult(name=tech.name, success=done)

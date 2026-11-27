@@ -64,6 +64,6 @@ class TransferEffect(CoreEffect):
             if source.status.has_status(self.condition):
                 source.status.clear_status(session)
                 new_status = Status.create(self.condition, dest, dest.steps)
-                dest.status.add_status(new_status)
+                dest.status.add_status(new_status, session=session)
                 done = True
         return TechEffectResult(name=tech.name, success=done)

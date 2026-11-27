@@ -67,7 +67,11 @@ class FeedBackEffect(CoreEffect):
             and not action.user.is_fainted
         ):
             damage = host.hp // self.divisor
-            action.user.current_hp = max(0, action.user.current_hp - damage)
+            hp_before = action.user.current_hp
+            action.user.current_hp = max(0, hp_before - damage)
+            status.record_hp_change(
+                session, action.user, hp_before, actor=host
+            )
             return StatusEffectResult(name=status.name, success=True)
 
         return StatusEffectResult(name=status.name, success=False)

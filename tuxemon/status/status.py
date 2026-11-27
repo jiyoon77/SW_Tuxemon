@@ -189,6 +189,19 @@ class Status:
             session.client.active_effect_manager.add_status(self)
         return result
 
+    def record_hp_change(
+        self,
+        session: Session,
+        target: Monster,
+        hp_before: int,
+        *,
+        actor: Monster | None = None,
+    ) -> None:
+        if (combat := session.combat_session) is not None:
+            combat.record_hp_change(
+                target, hp_before, actor=actor, status=self
+            )
+
     def tick_turn(self) -> None:
         self.lifecycle.tick_turn()
         logger.debug(

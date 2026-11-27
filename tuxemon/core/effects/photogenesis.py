@@ -83,6 +83,10 @@ class PhotogenesisEffect(CoreEffect):
             return TechEffectResult(name=tech.name)
 
         heal_amount = min(heal, user.missing_hp)
+        hp_before = user.current_hp
         user.current_hp += heal_amount
+        session.client.combat_session.record_hp_change(
+            user, hp_before, actor=user, technique=tech
+        )
         extra = [T.format("combat_state_healed", {"name": user.name})]
         return TechEffectResult(name=tech.name, success=True, extras=extra)

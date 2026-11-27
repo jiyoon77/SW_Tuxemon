@@ -53,9 +53,16 @@ class SacrificeEffect(CoreEffect):
         tech.hit = tech.accuracy >= hit
 
         if tech.hit:
-            damage = int(user.current_hp * self.multiplier)
+            combat = session.client.combat_session
+            user_hp = user.current_hp
+            damage = int(user_hp * self.multiplier)
             user.current_hp = 0
-            target.current_hp = max(0, target.current_hp - damage)
+            combat.record_hp_change(user, user_hp, actor=user, technique=tech)
+            target_hp = target.current_hp
+            target.current_hp = max(0, target_hp - damage)
+            combat.record_hp_change(
+                target, target_hp, actor=user, technique=tech
+            )
         else:
             damage = 0
 
