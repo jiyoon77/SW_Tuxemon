@@ -7,9 +7,10 @@ import random
 from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager, nullcontext
 from dataclasses import replace
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple
 from uuid import UUID
 
+from tuxemon import formula
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
 from tuxemon.combat.battle_log import (
     BattleEventType,
@@ -26,6 +27,7 @@ from tuxemon.combat.reward_system import (
     WildRewardCalculator,
 )
 from tuxemon.combat.utils import battlefield
+from tuxemon.database.rules import range_map
 from tuxemon.db import EffectPhase, ItemCategory, TargetType
 from tuxemon.event import get_event_bus
 from tuxemon.item.item import Item
@@ -45,6 +47,21 @@ if TYPE_CHECKING:
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
+
+
+# Technique effects that call simple_damage_calculate with the selected target.
+_ELEMENTAL_DAMAGE_EFFECTS = (
+    "damage",
+    "splash",
+    "multiattack",
+    "step_damage",
+    "money",
+)
+
+
+class TypeMatchup(NamedTuple):
+    multiplier: float | None
+    reason: Literal["no_elemental_damage"] | None = None
 
 
 class CombatSession:
@@ -695,6 +712,26 @@ class CombatSession:
             and (end_turn is None or entry.turn <= end_turn)
             and (actor_id is None or entry.actor_id == actor_id)
             and (target_id is None or entry.target_id == target_id)
+        )
+
+    @staticmethod
+    def get_type_matchup(technique: Technique, target: Monster) -> TypeMatchup:
+        """Read the selected target's type multiplier before weather and season.
+
+        The multiplier describes the elemental part of the formula if the
+        technique reaches it. Effects such as healing and proportional damage
+        do not use that formula and return a reason in place of a multiplier.
+        """
+        if technique.range not in range_map or not any(
+            technique.has_effect(effect)
+            for effect in _ELEMENTAL_DAMAGE_EFFECTS
+        ):
+            return TypeMatchup(None, "no_elemental_damage")
+
+        return TypeMatchup(
+            formula.simple_damage_multiplier(
+                technique.types.current, target.types.current
+            )
         )
 
     def record_battle_event(
