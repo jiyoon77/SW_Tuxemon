@@ -675,6 +675,28 @@ class CombatSession:
                 previous
             )
 
+    def get_battle_log(
+        self,
+        *,
+        start_turn: int | None = None,
+        end_turn: int | None = None,
+        actor_id: UUID | None = None,
+        target_id: UUID | None = None,
+    ) -> tuple[BattleLogEntry, ...]:
+        """Return recorded events in order as a read-only snapshot.
+
+        Turn bounds are inclusive. Set both to the same turn to query it
+        alone, or omit both for the entire current battle.
+        """
+        return tuple(
+            entry
+            for entry in self.battle_log
+            if (start_turn is None or entry.turn >= start_turn)
+            and (end_turn is None or entry.turn <= end_turn)
+            and (actor_id is None or entry.actor_id == actor_id)
+            and (target_id is None or entry.target_id == target_id)
+        )
+
     def record_battle_event(
         self,
         event_type: BattleEventType,

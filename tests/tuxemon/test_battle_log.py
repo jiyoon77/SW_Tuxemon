@@ -731,6 +731,58 @@ def test_tooth_for_tooth_records_self_and_enemy_damage(battle):
     assert reward_damage.damage == target.hp // 2
 
 
+def test_previous_turn_log_matches_hp_loss_for_each_target(battle):
+    session, combat, user, target = battle
+    other_target = Monster.spawn_base("rockitten", 10)
+    assert target.name == other_target.name
+    combat.set_battle_format(True)
+    combat.right_player.monsters.append(other_target)
+    combat.field_monsters.add_monster(combat.right_player, other_target)
+
+    target.current_hp = 1
+    targets = (target, other_target)
+    hp_before = [monster.current_hp for monster in targets]
+    spread = Technique.create("ram")
+    spread.target["enemy_monster"] = False
+    spread.target["enemy_team"] = True
+    assert use_queued_technique(battle, spread).success
+    hp_after = [monster.current_hp for monster in targets]
+    assert target.current_hp == 0
+
+    combat.next_turn()
+    combat.set_tech_hit(other_target, 0)
+    counterattack = (session, combat, other_target, user)
+    assert use_queued_technique(counterattack, Technique.create("ram")).success
+    combat.enqueue_action(user, Technique.create("ram"), other_target)
+    hp_at_query = [monster.current_hp for monster in (user, *targets)]
+    turn = combat.turn
+    queued_actions = list(combat.action_queue.queue)
+    log = tuple(combat.battle_log)
+
+    for _ in range(2):
+        for monster, before, after in zip(targets, hp_before, hp_after):
+            entries = combat.get_battle_log(
+                start_turn=turn - 1,
+                end_turn=turn - 1,
+                actor_id=user.instance_id,
+                target_id=monster.instance_id,
+            )
+            (damage,) = (entry for entry in entries if entry.event_type == "damage")
+            assert damage.target_id == monster.instance_id
+            assert damage.hp_change == after - before < 0
+
+    assert combat.get_battle_log() == log
+    assert combat.get_battle_log(start_turn=1, end_turn=2) == log
+    assert [entry.turn for entry in log] == [1, 1, 1, 2, 2]
+    assert combat.get_battle_log(actor_id=other_target.instance_id) == log[-2:]
+    assert combat.get_battle_log(start_turn=2, target_id=target.instance_id) == ()
+    assert combat.get_battle_log(end_turn=0) == ()
+    assert [monster.current_hp for monster in (user, *targets)] == hp_at_query
+    assert combat.turn == turn
+    assert combat.action_queue.queue == queued_actions
+    assert tuple(combat.battle_log) == log
+
+
 def test_zero_hp_change_has_no_damage_event(battle, monkeypatch):
     _, combat, _, _ = battle
     monkeypatch.setattr(
