@@ -731,6 +731,228 @@ def test_tooth_for_tooth_records_self_and_enemy_damage(battle):
     assert reward_damage.damage == target.hp // 2
 
 
+def test_full_battle_log_preserves_damage_and_healing_order(battle):
+    session, combat, _, target = battle
+    hp_before = target.current_hp
+    assert use_queued_technique(battle, Technique.create("ram")).success
+    hp_after_damage = target.current_hp
+
+    combat.next_turn()
+    combat.set_tech_hit(target, 0)
+    healing_action = (session, combat, target, target)
+    assert use_queued_technique(
+        healing_action, Technique.create("mending")
+    ).success
+
+    entries = combat.get_battle_log()
+    assert entries == tuple(combat.battle_log)
+    assert [entry.event_type for entry in entries] == [
+        "damage",
+        "technique_result",
+        "healing",
+        "technique_result",
+    ]
+    assert [entry.sequence for entry in entries] == [1, 2, 3, 4]
+    assert entries[0].hp_change == hp_after_damage - hp_before < 0
+    assert entries[2].hp_change == target.current_hp - hp_after_damage > 0
+
+
+def test_type_matchup_reads_current_types_without_changing_battle(battle):
+    _, combat, user, target = battle
+    assert use_queued_technique(battle, Technique.create("ram")).success
+    flow = Technique.create("flow")
+    mending = Technique.create("mending")
+    proportional = Technique.create("tooth_for_tooth")
+    combat.enqueue_action(user, Technique.create("ram"), target)
+    hp_before = user.current_hp, target.current_hp
+    turn = combat.turn
+    queued_actions = list(combat.action_queue.queue)
+    log = tuple(combat.battle_log)
+
+    assert combat.get_type_matchup(flow, target, user=user) == (1.0, None)
+    target.types.set_types(["fire"])
+    _, expected = formula.simple_damage_calculate(flow, user, target)
+    for _ in range(2):
+        matchup = combat.get_type_matchup(flow, target, user=user)
+        assert matchup.multiplier == expected == 2.0
+        assert matchup.reason is None
+        assert combat.get_type_matchup(mending, user, user=user) == (
+            None,
+            "no_elemental_damage",
+        )
+        assert combat.get_type_matchup(proportional, target, user=user) == (
+            None,
+            "no_elemental_damage",
+        )
+
+    flow.types.set_types(["fire"])
+    _, expected = formula.simple_damage_calculate(flow, user, target)
+    assert combat.get_type_matchup(flow, target, user=user) == (expected, None)
+    assert expected == 0.5
+
+    flow.power = 0.0
+    assert combat.get_type_matchup(flow, target, user=user) == (0.5, None)
+
+    assert (user.current_hp, target.current_hp) == hp_before
+    assert combat.turn == turn
+    assert combat.action_queue.queue == queued_actions
+    assert tuple(combat.battle_log) == log
+    assert flow.attempts == mending.attempts == proportional.attempts == 0
+
+
+@pytest.mark.parametrize(
+    ("slug", "user_type", "target_type", "previous_target_type", "expected"),
+    [
+        pytest.param(
+            "inner_power", "fire", "wood", None, 2.0, id="inner-power"
+        ),
+        pytest.param(
+            "external_power", "water", "fire", None, 2.0, id="external-power"
+        ),
+        pytest.param(
+            "power_theft", "earth", "fire", None, 0.5, id="power-theft"
+        ),
+        pytest.param(
+            "power_theft", "earth", "wood", "fire", 0.5, id="power-theft-reuse"
+        ),
+    ],
+)
+def test_type_matchup_matches_damage_after_move_type(
+    battle, slug, user_type, target_type, previous_target_type, expected
+):
+    session, combat, user, target = battle
+    user.types.set_types([user_type])
+    target.types.set_types([target_type])
+    technique = Technique.create(slug)
+
+    if previous_target_type is not None:
+        previous_target = Monster.spawn_base("rockitten", 10)
+        previous_target.types.set_types([previous_target_type])
+        combat.set_battle_format(True)
+        combat.right_player.monsters.append(previous_target)
+        combat.field_monsters.add_monster(combat.right_player, previous_target)
+        first_use = (session, combat, user, previous_target)
+        assert use_queued_technique(first_use, technique).success
+        assert technique.types.get_type_slugs() == [previous_target_type]
+        combat.next_turn()
+        technique.recharge()
+
+    types_before = technique.types.get_type_slugs()
+    attempts_before = technique.attempts
+    hp_before = user.current_hp, target.current_hp
+    turn = combat.turn
+    log = combat.get_battle_log()
+    combat.enqueue_action(user, technique, target)
+    queued_actions = list(combat.action_queue.queue)
+
+    matchup = combat.get_type_matchup(technique, target, user=user)
+
+    assert technique.types.get_type_slugs() == types_before
+    assert technique.attempts == attempts_before
+    assert (user.current_hp, target.current_hp) == hp_before
+    assert combat.turn == turn
+    assert combat.get_battle_log() == log
+    assert combat.action_queue.queue == queued_actions
+
+    action = combat.action_queue.pop()
+    actual, _ = combat.apply_technique(
+        session, action.method, action.user, action.target
+    )
+    assert actual.success
+    assert matchup == (actual.element_multiplier, None)
+    assert actual.element_multiplier == expected
+
+
+def test_previous_turn_log_matches_hp_loss_for_each_target(battle):
+    session, combat, user, target = battle
+    other_target = Monster.spawn_base("rockitten", 10)
+    assert target.name == other_target.name
+    combat.set_battle_format(True)
+    combat.right_player.monsters.append(other_target)
+    combat.field_monsters.add_monster(combat.right_player, other_target)
+
+    target.current_hp = 1
+    targets = (target, other_target)
+    hp_before = [monster.current_hp for monster in targets]
+    spread = Technique.create("ram")
+    spread.target["enemy_monster"] = False
+    spread.target["enemy_team"] = True
+    assert use_queued_technique(battle, spread).success
+    hp_after = [monster.current_hp for monster in targets]
+    assert target.current_hp == 0
+
+    combat.next_turn()
+    combat.set_tech_hit(other_target, 0)
+    counterattack = (session, combat, other_target, user)
+    assert use_queued_technique(counterattack, Technique.create("ram")).success
+    combat.enqueue_action(user, Technique.create("ram"), other_target)
+    hp_at_query = [monster.current_hp for monster in (user, *targets)]
+    turn = combat.turn
+    queued_actions = list(combat.action_queue.queue)
+    log = tuple(combat.battle_log)
+
+    for _ in range(2):
+        for monster, before, after in zip(targets, hp_before, hp_after):
+            entries = combat.get_battle_log(
+                start_turn=turn - 1,
+                end_turn=turn - 1,
+                actor_id=user.instance_id,
+                target_id=monster.instance_id,
+            )
+            (damage,) = (
+                entry for entry in entries if entry.event_type == "damage"
+            )
+            assert damage.target_id == monster.instance_id
+            assert damage.hp_change == after - before < 0
+
+    assert combat.get_battle_log() == log
+    assert combat.get_battle_log(start_turn=1, end_turn=2) == log
+    assert [entry.turn for entry in log] == [1, 1, 1, 2, 2]
+    assert combat.get_battle_log(actor_id=other_target.instance_id) == log[-2:]
+    assert (
+        combat.get_battle_log(start_turn=2, target_id=target.instance_id) == ()
+    )
+    assert combat.get_battle_log(end_turn=0) == ()
+    assert [monster.current_hp for monster in (user, *targets)] == hp_at_query
+    assert combat.turn == turn
+    assert combat.action_queue.queue == queued_actions
+    assert tuple(combat.battle_log) == log
+
+
+def test_previous_turn_log_reads_flow_damage_by_target_id(battle):
+    _, combat, user, target = battle
+    other = Monster.spawn_base("rockitten", 10)
+    assert target.name == other.name
+    assert target.instance_id != other.instance_id
+    combat.set_battle_format(True)
+    combat.right_player.monsters.append(other)
+    combat.field_monsters.add_monster(combat.right_player, other)
+
+    target.current_hp = 1
+    targets = (target, other)
+    hp_before = [monster.current_hp for monster in targets]
+    flow = Technique.create("flow")
+    flow.target["enemy_monster"] = False
+    flow.target["enemy_team"] = True
+    assert use_queued_technique(battle, flow).success
+    hp_after = [monster.current_hp for monster in targets]
+
+    combat.next_turn()
+    previous_turn = combat.turn - 1
+    for monster, before, after in zip(targets, hp_before, hp_after):
+        entries = combat.get_battle_log(
+            start_turn=previous_turn,
+            end_turn=previous_turn,
+            actor_id=user.instance_id,
+            target_id=monster.instance_id,
+        )
+        (damage,) = (
+            entry for entry in entries if entry.event_type == "damage"
+        )
+        assert damage.technique_slug == "flow"
+        assert damage.hp_change == after - before < 0
+
+
 def test_zero_hp_change_has_no_damage_event(battle, monkeypatch):
     _, combat, _, _ = battle
     monkeypatch.setattr(
