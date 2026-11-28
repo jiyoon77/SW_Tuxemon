@@ -715,12 +715,15 @@ class CombatSession:
         )
 
     @staticmethod
-    def get_type_matchup(technique: Technique, target: Monster) -> TypeMatchup:
+    def get_type_matchup(
+        technique: Technique, target: Monster, *, user: Monster
+    ) -> TypeMatchup:
         """Read the selected target's type multiplier before weather and season.
 
         The multiplier describes the elemental part of the formula if the
-        technique reaches it. Effects such as healing and proportional damage
-        do not use that formula and return a reason in place of a multiplier.
+        technique reaches it. Resolve move_type effects without changing the
+        technique. Effects such as healing and proportional damage do not use
+        that formula and return a reason in place of a multiplier.
         """
         if technique.range not in range_map or not any(
             technique.has_effect(effect)
@@ -728,10 +731,15 @@ class CombatSession:
         ):
             return TypeMatchup(None, "no_elemental_damage")
 
+        target_types = target.types.current
+        attack_types = technique.types.current
+        if technique.has_effect_param("move_type", "own_monster"):
+            attack_types = user.types.current
+        elif technique.has_effect_param("move_type", "enemy_monster"):
+            attack_types = target_types
+
         return TypeMatchup(
-            formula.simple_damage_multiplier(
-                technique.types.current, target.types.current
-            )
+            formula.simple_damage_multiplier(attack_types, target_types)
         )
 
     def record_battle_event(

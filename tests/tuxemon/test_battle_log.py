@@ -769,34 +769,98 @@ def test_type_matchup_reads_current_types_without_changing_battle(battle):
     queued_actions = list(combat.action_queue.queue)
     log = tuple(combat.battle_log)
 
-    assert combat.get_type_matchup(flow, target).multiplier == 1.0
+    assert combat.get_type_matchup(flow, target, user=user) == (1.0, None)
     target.types.set_types(["fire"])
     _, expected = formula.simple_damage_calculate(flow, user, target)
     for _ in range(2):
-        matchup = combat.get_type_matchup(flow, target)
+        matchup = combat.get_type_matchup(flow, target, user=user)
         assert matchup.multiplier == expected == 2.0
         assert matchup.reason is None
-        assert combat.get_type_matchup(mending, user) == (
+        assert combat.get_type_matchup(mending, user, user=user) == (
             None,
             "no_elemental_damage",
         )
-        assert combat.get_type_matchup(proportional, target) == (
+        assert combat.get_type_matchup(proportional, target, user=user) == (
             None,
             "no_elemental_damage",
         )
 
     flow.types.set_types(["fire"])
     _, expected = formula.simple_damage_calculate(flow, user, target)
-    assert combat.get_type_matchup(flow, target).multiplier == expected == 0.5
+    assert combat.get_type_matchup(flow, target, user=user) == (expected, None)
+    assert expected == 0.5
 
     flow.power = 0.0
-    assert combat.get_type_matchup(flow, target).multiplier == 0.5
+    assert combat.get_type_matchup(flow, target, user=user) == (0.5, None)
 
     assert (user.current_hp, target.current_hp) == hp_before
     assert combat.turn == turn
     assert combat.action_queue.queue == queued_actions
     assert tuple(combat.battle_log) == log
     assert flow.attempts == mending.attempts == proportional.attempts == 0
+
+
+@pytest.mark.parametrize(
+    ("slug", "user_type", "target_type", "previous_target_type", "expected"),
+    [
+        pytest.param(
+            "inner_power", "fire", "wood", None, 2.0, id="inner-power"
+        ),
+        pytest.param(
+            "external_power", "water", "fire", None, 2.0, id="external-power"
+        ),
+        pytest.param(
+            "power_theft", "earth", "fire", None, 0.5, id="power-theft"
+        ),
+        pytest.param(
+            "power_theft", "earth", "wood", "fire", 0.5, id="power-theft-reuse"
+        ),
+    ],
+)
+def test_type_matchup_matches_damage_after_move_type(
+    battle, slug, user_type, target_type, previous_target_type, expected
+):
+    session, combat, user, target = battle
+    user.types.set_types([user_type])
+    target.types.set_types([target_type])
+    technique = Technique.create(slug)
+
+    if previous_target_type is not None:
+        previous_target = Monster.spawn_base("rockitten", 10)
+        previous_target.types.set_types([previous_target_type])
+        combat.set_battle_format(True)
+        combat.right_player.monsters.append(previous_target)
+        combat.field_monsters.add_monster(combat.right_player, previous_target)
+        first_use = (session, combat, user, previous_target)
+        assert use_queued_technique(first_use, technique).success
+        assert technique.types.get_type_slugs() == [previous_target_type]
+        combat.next_turn()
+        technique.recharge()
+
+    types_before = technique.types.get_type_slugs()
+    attempts_before = technique.attempts
+    hp_before = user.current_hp, target.current_hp
+    turn = combat.turn
+    log = combat.get_battle_log()
+    combat.enqueue_action(user, technique, target)
+    queued_actions = list(combat.action_queue.queue)
+
+    matchup = combat.get_type_matchup(technique, target, user=user)
+
+    assert technique.types.get_type_slugs() == types_before
+    assert technique.attempts == attempts_before
+    assert (user.current_hp, target.current_hp) == hp_before
+    assert combat.turn == turn
+    assert combat.get_battle_log() == log
+    assert combat.action_queue.queue == queued_actions
+
+    action = combat.action_queue.pop()
+    actual, _ = combat.apply_technique(
+        session, action.method, action.user, action.target
+    )
+    assert actual.success
+    assert matchup == (actual.element_multiplier, None)
+    assert actual.element_multiplier == expected
 
 
 def test_previous_turn_log_matches_hp_loss_for_each_target(battle):
